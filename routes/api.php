@@ -3,8 +3,10 @@
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Patient\PatientController;
 use App\Http\Controllers\SuperDoctor\AddAdviceAndSupportAndInfoController;
+use App\Http\Controllers\SuperDoctor\ApproveAndRejectController;
 use App\Http\Controllers\SuperDoctor\SuperDoctorController;
 use Illuminate\Support\Facades\Route;
+
 
 
 Route::post('/register', [AuthController::class, 'register']);
@@ -38,6 +40,14 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
     Route::post('/storePsychologicalSupport', [AddAdviceAndSupportAndInfoController::class, 'storePsychologicalSupport']);
     Route::post('/updatePsychologicalSupport/{id}', [AddAdviceAndSupportAndInfoController::class, 'updatePsychologicalSupport']);
     Route::delete('/destroyPsychologicalSupport/{id}', [AddAdviceAndSupportAndInfoController::class, 'destroyPsychologicalSupport']);
-});
+
+
+    Route::get('/getPendingUsers', [ApproveAndRejectController::class, 'getPendingUsers']);
+    Route::post('/approveUser/{id}', [ApproveAndRejectController::class, 'approveUser']);
+    Route::post('/rejectUser/{id}', [ApproveAndRejectController::class, 'rejectUser']);
+
+     Route::post('toggleDoctorRole/{id}', [SuperDoctorController::class, 'toggleDoctorRole']);
+
+    });
 
 Route::middleware(['auth:sanctum', 'role:patient'])->group(function () {});
