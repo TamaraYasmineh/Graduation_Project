@@ -50,4 +50,14 @@ class CenterInfoService
             'data' => $center
         ];
     }
+public function getAllCenters()
+{
+     $centers = CenterInfo::latest()->get();
+
+    return [
+        'success' => true,
+        'data' => $centers
+    ];
+}
+
 }

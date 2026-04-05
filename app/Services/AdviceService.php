@@ -72,4 +72,33 @@ class AdviceService
             'message' => 'Advice deleted successfully'
         ];
     }
+
+    public function updateAdvice($id, $data, $user)
+{
+    $advice = Advice::find($id);
+
+    if (!$advice) {
+        return [
+            'success' => false,
+            'message' => 'Advice not found',
+            'code' => 404
+        ];
+    }
+
+   
+    if ($user->role !== 'super_doctor' && $user->id !== $advice->created_by) {
+        return [
+            'success' => false,
+            'message' => 'Unauthorized',
+            'code' => 403
+        ];
+    }
+
+    $advice->update($data);
+
+    return [
+        'success' => true,
+        'data' => $advice
+    ];
+}
 }
