@@ -21,6 +21,7 @@ class User extends Authenticatable
     public const STATUS_PENDING = 'pending';
     public const STATUS_APPROVED = 'approved';
     public const STATUS_REJECTED = 'rejected';
+    protected $guard_name = 'web';
     protected $fillable = [
         'name',
         'email',
