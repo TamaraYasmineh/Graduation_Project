@@ -6,9 +6,11 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAdviceRequest;
 use App\Http\Requests\StoreCenterInfoRequest;
 use App\Http\Requests\StoreSupportRequest;
+use App\Http\Requests\UpdateAdviceRequest;
 use App\Http\Requests\UpdateCenterInfoRequest;
 use App\Http\Requests\UpdateSupportRequest;
 use App\Http\Resources\AdviceResource;
+use App\Http\Resources\CenterInfoResource;
 use App\Http\Resources\PsychologicalSupportResource;
 use App\Services\AdviceService;
 use App\Services\CenterInfoService;
@@ -21,7 +23,7 @@ class AddAdviceAndSupportAndInfoController extends Controller
     protected $service;
     protected $supportService;
 
-    public function __construct(AdviceService $adviceService,CenterInfoService $service,PsychologicalSupportService $supportService)
+    public function __construct(AdviceService $adviceService, CenterInfoService $service, PsychologicalSupportService $supportService)
     {
         $this->adviceService = $adviceService;
         $this->service = $service;
@@ -85,7 +87,7 @@ class AddAdviceAndSupportAndInfoController extends Controller
 
     //store center's info
 
- public function storeCenterInformation(StoreCenterInfoRequest $request)
+    public function storeCenterInformation(StoreCenterInfoRequest $request)
     {
         $result = $this->service->storeCenterInfo(
             $request->validated(),
@@ -122,9 +124,18 @@ class AddAdviceAndSupportAndInfoController extends Controller
             'message' => 'Center info updated'
         ]);
     }
+    //عرض
+    public function showCenterInformation()
+    {
+        $result = $this->service->getAllCenters();
 
+        return response()->json([
+            'success' => true,
+            'data' => CenterInfoResource::collection($result['data'])
+        ]);
+    }
     //psychological support
-     public function storePsychologicalSupport(StoreSupportRequest $request)
+    public function storePsychologicalSupport(StoreSupportRequest $request)
     {
         $result = $this->supportService->store($request->validated(), $request->user());
 
@@ -174,10 +185,30 @@ class AddAdviceAndSupportAndInfoController extends Controller
         return response()->json([
             'success' => true,
             'data' => PsychologicalSupportResource::collection(
-        $this->supportService->show()
-    )
+                $this->supportService->show()
+            )
+        ]);
+    }
+
+    public function updateAdvice($id, UpdateAdviceRequest $request)
+    {
+        $result = $this->adviceService->updateAdvice(
+            $id,
+            $request->validated(),
+            $request->user()
+        );
+
+        if (!$result['success']) {
+            return response()->json([
+                'success' => false,
+                'message' => $result['message']
+            ], $result['code']);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => new AdviceResource($result['data']),
+            'message' => 'Advice updated successfully'
         ]);
     }
 }
-
-
