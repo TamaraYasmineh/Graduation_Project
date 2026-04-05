@@ -71,4 +71,12 @@ class User extends Authenticatable
     {
     return $this->roles->first()?->name;
     }
+    public function supports()
+{
+    return $this->hasMany(PsychologicalSupport::class, 'created_by');
+}
+public function advices()
+{
+    return $this->hasMany(Advice::class, 'created_by');
+}
 }
