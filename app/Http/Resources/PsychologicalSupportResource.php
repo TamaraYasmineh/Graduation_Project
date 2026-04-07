@@ -18,8 +18,7 @@ class PsychologicalSupportResource extends JsonResource
         'id' => $this->id,
         'title' => $this->title,
         'content' => $this->content,
-        'image' => asset('storage/' . $this->image),
-
+        'image' =>$this->image ? asset('storage/' . $this->image): null,
         // فقط الاسم
         'created_by' => $this->creator->name ?? null,
     ];

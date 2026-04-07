@@ -25,7 +25,6 @@ Route::middleware(['auth:sanctum', 'role:super_doctor|patient'])->group(function
     Route::get('/getAdvicesForPatientsAndSuper', [AddAdviceAndSupportAndInfoController::class, 'getAdvicesForPatientsAndSuper']);
 
     Route::get('/showCenterInformation', [AddAdviceAndSupportAndInfoController::class, 'showCenterInformation']);
-
     Route::get('/showPsychologicalSupport', [AddAdviceAndSupportAndInfoController::class, 'showPsychologicalSupport']);
 });
 

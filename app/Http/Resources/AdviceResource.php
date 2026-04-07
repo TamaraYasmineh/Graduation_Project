@@ -18,6 +18,7 @@ class AdviceResource extends JsonResource
             'id' => $this->id,
             'title' => $this->title,
             'content' => $this->content,
+            'icon' => $this->icon ? asset('storage/' . $this->icon) : null,
             'created_by' => $this->creator->name ?? null,
             'created_at' => $this->created_at,
         ];

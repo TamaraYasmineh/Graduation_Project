@@ -9,7 +9,7 @@ class PsychologicalSupportService
     // إضافة
     public function store($data, $user)
     {
-        if ($user->role !== 'super_doctor') {
+        if (!$user->hasRole('super_doctor')) {
             return [
                 'success' => false,
                 'message' => 'Only super doctor can add support',
@@ -46,13 +46,16 @@ class PsychologicalSupportService
             ];
         }
 
-        if ($user->role !== 'super_doctor' && $user->id !== $support->created_by) {
+        if (
+            !$user->hasRole('super_doctor') &&
+            $user->id !== $support->created_by
+        )
             return [
                 'success' => false,
                 'message' => 'Unauthorized',
                 'code' => 403
             ];
-        }
+        
 
         // تعديل الصورة إذا أُرسلت
         if (isset($data['image'])) {
@@ -85,7 +88,10 @@ class PsychologicalSupportService
             ];
         }
 
-        if ($user->role !== 'super_doctor' && $user->id !== $support->created_by) {
+        if (
+            !$user->hasRole('super_doctor') &&
+            $user->id !== $support->created_by
+        ){
             return [
                 'success' => false,
                 'message' => 'Unauthorized',
