@@ -4,9 +4,42 @@ namespace App\Services;
 use App\Models\User;
 class UserService {
 
-public function getPendingUsers($user)
+    public function getPendingUsers($user)
+    {
+        if ($user->role !== 'super_doctor') {
+            return [
+                'success' => false,
+                'message' => 'Unauthorized',
+                'code' => 403
+            ];
+        }
+    
+        $users = User::with('roles')
+            ->role(['doctor', 'secretary'])
+            ->where('status', 'pending')
+            ->latest()
+            ->get();
+        $users = $users->map(function ($user) {
+            return [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone,
+                'gender' => $user->gender,
+                'status' => $user->status,
+                'role' => $user->roles->pluck('name')->first()
+            ];
+        });
+    
+        return [
+            'success' => true,
+            'data' => $users
+        ];
+    }
+
+    public function getRejectedUsers($user)
 {
-    if ($user->role !== 'super_doctor') {
+    if (!$user->hasRole('super_doctor')) {
         return [
             'success' => false,
             'message' => 'Unauthorized',
@@ -14,18 +47,94 @@ public function getPendingUsers($user)
         ];
     }
 
-    $users = User::role(['doctor', 'secretary'])
-    ->where('status', 'pending')
-    ->latest()
-    ->get();
+    $users = User::with('roles')
+        ->role(['doctor', 'secretary'])
+        ->where('status', User::STATUS_REJECTED)
+        ->latest()
+        ->get();
+
+    $users = $users->map(function ($user) {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone,
+            'gender' => $user->gender,
+            'status' => $user->status,
+            'role' => $user->roles->pluck('name')->first()
+        ];
+    });
 
     return [
         'success' => true,
+        'message' => 'Rejected users fetched successfully',
         'data' => $users
     ];
 }
+public function getApprovedUsers($user)
+{
+    if (!$user->hasRole('super_doctor')) {
+        return [
+            'success' => false,
+            'message' => 'Unauthorized',
+            'code' => 403
+        ];
+    }
 
-//approveUser
+    $users = User::with('roles')
+        ->role(['doctor', 'secretary'])
+        ->where('status', User::STATUS_APPROVED)
+        ->latest()
+        ->get();
+
+    $users = $users->map(function ($user) {
+        return [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone,
+            'gender' => $user->gender,
+            'status' => $user->status,
+            'role' => $user->roles->pluck('name')->first()
+        ];
+    });
+
+    return [
+        'success' => true,
+        'message' => 'Approved users fetched successfully',
+        'data' => $users
+    ];
+}
+public function getSuperDoctors($user)
+{
+    if (!$user->hasRole('super_doctor')) {
+        return [
+            'success' => false,
+            'message' => 'Unauthorized',
+            'code' => 403
+        ];
+    }
+
+    $users = User::with('roles')
+        ->role('super_doctor')
+        ->latest()
+        ->get()
+        ->map(fn($user) => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'phone' => $user->phone,
+            'gender' => $user->gender,
+            'status' => $user->status,
+            'role' => $user->roles->pluck('name')->first()
+        ]);
+
+    return [
+        'success' => true,
+        'message' => 'Super doctors fetched successfully',
+        'data' => $users
+    ];
+}
 public function approveUser($id, $user)
 {
     if (!$user->hasRole('super_doctor')) {
@@ -46,7 +155,6 @@ public function approveUser($id, $user)
         ];
     }
 
-    //  تحقق من الدور
     if (!$targetUser->hasAnyRole(['doctor', 'secretary'])) {
         return [
             'success' => false,

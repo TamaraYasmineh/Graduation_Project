@@ -46,6 +46,9 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
 
 
     Route::get('/getPendingUsers', [ApproveAndRejectController::class, 'getPendingUsers']);
+    Route::get('/rejected-users', [ApproveAndRejectController::class, 'getRejectedUsers']);
+    Route::get('/approved-users', [ApproveAndRejectController::class, 'getApprovedUsers']);
+    Route::get('/super-doctors', [ApproveAndRejectController::class, 'getSuperDoctors']);
     Route::post('/approveUser/{id}', [ApproveAndRejectController::class, 'approveUser']);
     Route::post('/rejectUser/{id}', [ApproveAndRejectController::class, 'rejectUser']);
 
