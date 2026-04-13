@@ -25,7 +25,7 @@ class SuperDoctorService
     public function toggleDoctorRole($id, $authUser)
     {
         //  تحقق أن المستخدم سوبر دكتور
-        if (!$authUser->hasRole('super_doctor')) {
+        if (!$authUser->can('toggle_doctor_role')) {
             return [
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -35,14 +35,13 @@ class SuperDoctorService
 
         $targetUser = User::find($id);
 
-        if (!$targetUser) {
+        if ($targetUser->status !== User::STATUS_APPROVED) {
             return [
                 'success' => false,
-                'message' => 'User not found',
-                'code' => 404
+                'message' => 'User must be approved first',
+                'code' => 403
             ];
         }
-
         //  منع تعديل نفسك
         if ($authUser->id === $targetUser->id) {
             return [

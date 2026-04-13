@@ -64,6 +64,10 @@ class AuthService
             case 'patient':
                 Patient::create([
                     'user_id' => $user->id,
+                    'date_of_birth' => $data['date_of_birth'] ?? null,
+                    'country' => $data['country'] ?? null,
+                    'city' => $data['city'] ?? null,
+                    'emergency_contact' => $data['emergency_contact'] ?? null,
                 ]);
                 break;
 
@@ -76,81 +80,5 @@ class AuthService
                 break;
         }
     }
-    /*  public function login($email, $password)
-{
-    // ⛔ تحقق إذا الحساب مقفول
-    if (Cache::has($this->blockedKey($email))) {
-        throw new \Exception('Too many attempts. Try again later.');
-    }
-
-    $user = User::where('email', $email)->first();
-
-    if (!$user || !Hash::check($password, $user->password)) {
-
-        // ❌ زيادة المحاولات
-        $attempts = Cache::increment($this->attemptsKey($email));
-
-        // ⛔ إذا وصل 5 → block
-        if ($attempts >= 5) {
-            Cache::put(
-                $this->blockedKey($email),
-                true,
-                now()->addMinutes(15)
-            );
-        }
-
-        // خلي attempts تنتهي بعد فترة
-        Cache::put(
-            $this->attemptsKey($email),
-            $attempts,
-            now()->addMinutes(10)
-        );
-
-        throw new \Exception('Invalid credentials');
-    }
-
-    // ✅ نجاح → تصفير المحاولات
-    Cache::forget($this->attemptsKey($email));
-
-    if ($user->status !== User::STATUS_APPROVED) {
-        throw new \Exception('Account not approved');
-    }
-
-    $otp = $this->otpService->generate($user->email);
-
-    return [
-        'message' => 'OTP sent',
-        'otp' => $otp,
-    ];
-}
-    public function verifyOtp($email, $code)
-   {
-    $valid = $this->otpService->verify($email, $code);
-
-    if (!$valid) {
-        throw new \Exception('Invalid or expired OTP');
-    }
-
-    $user = User::where('email', $email)->first();
-
-    if (!$user) {
-        throw new \Exception('User not found');
-    }
-
-    $token = $user->createToken('auth_token')->plainTextToken;
-
-    return [
-        'user' => $user,
-        'token' => $token,
-    ];
-   }
-   private function attemptsKey($email)
-{
-    return 'login_attempts_' . md5($email);
-}
-
-private function blockedKey($email)
-{
-    return 'login_blocked_' . md5($email);
-}*/
+  
 }

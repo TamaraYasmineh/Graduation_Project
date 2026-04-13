@@ -7,7 +7,7 @@ class CenterInfoService
 {
     public function storeCenterInfo($data, $user)
     {
-        if ($user->role !== 'super_doctor') {
+        if (!$user->can('manage_center')) {
             return [
                 'success' => false,
                 'message' => 'Only super doctor can add center info',
@@ -25,7 +25,7 @@ class CenterInfoService
 
     public function updateCenterInfo($id, $data, $user)
     {
-        if ($user->role !== 'super_doctor') {
+        if (!$user->can('manage_center')) {
             return [
                 'success' => false,
                 'message' => 'Only super doctor can update',

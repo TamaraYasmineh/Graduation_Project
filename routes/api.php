@@ -2,9 +2,11 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Patient\PatientController;
+use App\Http\Controllers\Patient\MedicalRecordController;
 use App\Http\Controllers\SuperDoctor\AddAdviceAndSupportAndInfoController;
 use App\Http\Controllers\SuperDoctor\ApproveAndRejectController;
 use App\Http\Controllers\SuperDoctor\SuperDoctorController;
+use App\Http\Controllers\Doctor\BookingController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -26,6 +28,8 @@ Route::middleware(['auth:sanctum', 'role:super_doctor|patient'])->group(function
 
     Route::get('/showCenterInformation', [AddAdviceAndSupportAndInfoController::class, 'showCenterInformation']);
     Route::get('/showPsychologicalSupport', [AddAdviceAndSupportAndInfoController::class, 'showPsychologicalSupport']);
+
+    Route::post('/medical-record', [MedicalRecordController::class, 'storemedicalRecord']);
 });
 
 Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
@@ -50,3 +54,9 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
     });
 
 Route::middleware(['auth:sanctum', 'role:patient'])->group(function () {});
+Route::middleware(['auth:sanctum', 'role:doctor'])->group(function () {
+    Route::post('storeSchedule', [BookingController::class, 'storeSchedule']);
+    Route::post('/schedule/{id}', [BookingController::class, 'updateSchedule']);
+    Route::delete('/schedule/{id}', [BookingController::class, 'deleteSchedule']);
+    Route::get('/available-slots', [BookingController::class, 'getAvailableSlots']);
+});

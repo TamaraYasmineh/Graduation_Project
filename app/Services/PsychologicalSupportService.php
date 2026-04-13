@@ -9,7 +9,7 @@ class PsychologicalSupportService
     // إضافة
     public function store($data, $user)
     {
-        if (!$user->hasRole('super_doctor')) {
+        if (!$user->can('create_support')) {
             return [
                 'success' => false,
                 'message' => 'Only super doctor can add support',
@@ -46,10 +46,8 @@ class PsychologicalSupportService
             ];
         }
 
-        if (
-            !$user->hasRole('super_doctor') &&
-            $user->id !== $support->created_by
-        )
+        if (!$user->can('update_support') &&
+        $user->id !== $support->created_by)
             return [
                 'success' => false,
                 'message' => 'Unauthorized',
@@ -88,10 +86,8 @@ class PsychologicalSupportService
             ];
         }
 
-        if (
-            !$user->hasRole('super_doctor') &&
-            $user->id !== $support->created_by
-        ){
+        if (!$user->can('delete_support') &&
+            $user->id !== $support->created_by) {
             return [
                 'success' => false,
                 'message' => 'Unauthorized',

@@ -8,7 +8,7 @@ class AdviceService
 {
     public function store($data, $user)
     {
-        if (!$user->hasRole('super_doctor')) {
+        if (!$user->can('create_advice')) {
             return [
                 'success' => false,
                 'message' => 'Only super admin can add advice',
@@ -62,7 +62,7 @@ class AdviceService
             ];
         }
 
-        if ( !$user->hasRole('super_doctor') &&
+        if (!$user->can('delete_advice') &&
         $user->id !== $advice->created_by) {
             return [
                 'success' => false,
@@ -94,7 +94,7 @@ class AdviceService
     }
 
    
-    if ( !$user->hasRole('super_doctor') &&
+    if (!$user->can('update_advice') &&
     $user->id !== $advice->created_by) {
         return [
             'success' => false,
