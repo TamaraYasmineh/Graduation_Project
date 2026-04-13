@@ -10,7 +10,8 @@ class Advice extends Model
     protected $fillable = [
         'title',
         'content',
-        'created_by'
+        'created_by',
+        'icon'
         ];
 
     public function creator()

@@ -11,12 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('advices', function (Blueprint $table) {
+        Schema::create('schedules', function (Blueprint $table) {
             $table->id();
-            $table->string('title');
-            $table->text('content');
-            $table->string('icon')->nullable();
-            $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
+            $table->foreignId('doctor_id')
+              ->constrained()
+                ->cascadeOnDelete();
+            $table->date('date');
+            $table->time('start_time');
+            $table->time('end_time');
+            $table->integer('slot_duration')->default(15);
             $table->timestamps();
         });
     }
@@ -26,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('advices');
+        Schema::dropIfExists('schedules');
     }
 };

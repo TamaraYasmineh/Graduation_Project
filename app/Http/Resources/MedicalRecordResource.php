@@ -5,7 +5,7 @@ namespace App\Http\Resources;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class AdviceResource extends JsonResource
+class MedicalRecordResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,11 +16,12 @@ class AdviceResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'title' => $this->title,
-            'content' => $this->content,
-            'icon' => $this->icon ? asset('storage/' . $this->icon) : null,
-            'created_by' => $this->creator->name ?? null,
-            'created_at' => $this->created_at,
+            'chronic_diseases' => $this->chronic_diseases,
+            'allergies' => $this->allergies,
+            'medications' => $this->medications,
+            'is_smoker' => $this->is_smoker,
+            'height' => $this->height,
+            'weight' => $this->weight,
         ];
     }
 }

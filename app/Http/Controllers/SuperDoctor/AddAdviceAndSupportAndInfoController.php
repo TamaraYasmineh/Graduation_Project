@@ -145,7 +145,7 @@ class AddAdviceAndSupportAndInfoController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $result['data']
+            'data' => new PsychologicalSupportResource($result['data'])
         ]);
     }
 
@@ -160,7 +160,7 @@ class AddAdviceAndSupportAndInfoController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $result['data']
+            'data' => new PsychologicalSupportResource($result['data'])
         ]);
     }
 

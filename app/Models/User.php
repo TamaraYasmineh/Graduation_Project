@@ -21,7 +21,7 @@ class User extends Authenticatable
     public const STATUS_PENDING = 'pending';
     public const STATUS_APPROVED = 'approved';
     public const STATUS_REJECTED = 'rejected';
-    protected $guard_name = 'web';
+    protected $guard_name = 'api';
     protected $fillable = [
         'name',
         'email',
@@ -79,5 +79,13 @@ class User extends Authenticatable
 public function advices()
 {
     return $this->hasMany(Advice::class, 'created_by');
+}
+public function medicalRecord()
+{
+    return $this->hasOne(MedicalRecord::class, 'patient_id');
+}
+public function appointments()
+{
+    return $this->hasMany(Appointments::class, 'patient_id');
 }
 }
