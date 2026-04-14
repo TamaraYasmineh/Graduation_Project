@@ -16,7 +16,7 @@ class BookingService
             $dayName = $date->format('l');
 
             $schedule = Schedule::where('doctor_id', $doctorId)
-                ->where('day_of_week', $dayName)
+            ->where('date', $date->toDateString())
                 ->first();
 
             if (!$schedule) {

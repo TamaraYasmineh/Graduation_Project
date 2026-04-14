@@ -57,15 +57,18 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
     Route::post('/rejectUser/{id}', [ApproveAndRejectController::class, 'rejectUser']);
 
      Route::post('toggleDoctorRole/{id}', [SuperDoctorController::class, 'toggleDoctorRole']);
-
     });
+   
 
 Route::middleware(['auth:sanctum', 'role:patient'])->group(function () {});
-Route::middleware(['auth:sanctum', 'role:doctor'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:doctor|super_doctor'])->group(function () {
     Route::post('storeSchedule', [BookingController::class, 'storeSchedule']);
     Route::post('/schedule/{id}', [BookingController::class, 'updateSchedule']);
     Route::delete('/schedule/{id}', [BookingController::class, 'deleteSchedule']);
     Route::get('/available-slots', [BookingController::class, 'getAvailableSlots']);
+    Route::get('/doctor/schedules', [BookingController::class, 'getMySchedules']);
+    Route::get('/doctor/getAllSchedules', [BookingController::class, 'getAllSchedules']);
+});
 });
 
 Route::post('/save-token', [FirebaseController::class, 'saveToken'])->middleware('auth:sanctum');

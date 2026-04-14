@@ -9,12 +9,28 @@ use App\Http\Requests\StoreScheduleRequest;
 use App\Models\Schedule;
 use App\Models\Appointments;
 use Carbon\Carbon;
+use App\Http\Resources\ScheduleResource;
 class BookingController extends BaseController
 {
     public function storeSchedule(StoreScheduleRequest $request)
     {
-        $schedule = Schedule::create($request->validated());
+        $user = auth()->user();
 
+        if (!$user) {
+            return $this->sendError('Unauthenticated', [], 401);
+        }
+    
+        if (!$user->doctor()->exists()) {
+            return $this->sendError('هذا المستخدم ليس دكتور', [], 403);
+        }
+    
+        $doctor = $user->doctor;
+    
+        $data = $request->validated();
+        $data['doctor_id'] = $doctor->id;
+    
+        $schedule = Schedule::create($data);
+    
         return $this->sendResponse(
             $schedule,
             'Schedule created successfully'
@@ -22,20 +38,25 @@ class BookingController extends BaseController
     }
 
     public function updateSchedule($id, StoreScheduleRequest $request)
-{
-    $schedule = Schedule::find($id);
-
-    if (!$schedule) {
-        return $this->sendError('Schedule not found', [], 404);
+    {
+        $user = auth()->user();
+        $doctor = $user->doctor;
+    
+        $schedule = Schedule::where('id', $id)
+            ->where('doctor_id', $doctor->id)
+            ->first();
+    
+        if (!$schedule) {
+            return $this->sendError('Schedule not found', [], 404);
+        }
+    
+        $schedule->update($request->validated());
+    
+        return $this->sendResponse(
+            $schedule,
+            'Schedule updated successfully'
+        );
     }
-
-    $schedule->update($request->validated());
-
-    return $this->sendResponse(
-        $schedule,
-        'Schedule updated successfully'
-    );
-}
      public function deleteSchedule($id)
 {
     $schedule = Schedule::find($id);
@@ -51,14 +72,20 @@ class BookingController extends BaseController
         'Schedule deleted successfully'
     );
 }
+
 public function getAvailableSlots(Request $request)
 {
+    $user = auth()->user();
+
+    if (!$user || !$user->doctor()->exists()) {
+        return $this->sendError('Unauthorized', [], 403);
+    }
+
     $request->validate([
-        'doctor_id' => 'required|exists:doctors,id',
         'date' => 'required|date'
     ]);
 
-    $doctorId = $request->doctor_id;
+    $doctorId = $user->doctor->id;
     $date = $request->date;
 
     $schedule = Schedule::where('doctor_id', $doctorId)
@@ -75,17 +102,17 @@ public function getAvailableSlots(Request $request)
 
     $slots = [];
 
-    while ($start < $end) {
+    while ($start->copy()->addMinutes($duration) <= $end) {
 
         $slotStart = $start->format('H:i');
         $slotEnd = $start->copy()->addMinutes($duration)->format('H:i');
 
-        $exists = Appointments::where('doctor_id', $doctorId)
+        $isBooked = Appointments::where('doctor_id', $doctorId)
             ->where('date', $date)
             ->where('start_time', $slotStart)
             ->exists();
 
-        if (!$exists) {
+        if (!$isBooked) {
             $slots[] = [
                 'start_time' => $slotStart,
                 'end_time' => $slotEnd,
@@ -96,5 +123,35 @@ public function getAvailableSlots(Request $request)
     }
 
     return $this->sendResponse($slots, 'Available slots');
+}
+public function getMySchedules()
+{
+    $user = auth()->user();
+
+    if (!$user || !$user->doctor()->exists()) {
+        return $this->sendError('Unauthorized', [], 403);
+    }
+
+    $doctorId = $user->doctor->id;
+
+    $schedules = Schedule::where('doctor_id', $doctorId)
+        ->orderBy('date', 'asc')
+        ->get();
+
+    return $this->sendResponse(
+        $schedules,
+        'Doctor schedules'
+    );
+}
+public function getAllSchedules()
+{
+    $schedules = Schedule::with('doctor.user')
+        ->orderBy('date')
+        ->get();
+
+    return $this->sendResponse(
+        ScheduleResource::collection($schedules),
+        'All schedules'
+    );
 }
 }
