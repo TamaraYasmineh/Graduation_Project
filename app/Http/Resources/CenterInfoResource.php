@@ -20,6 +20,7 @@ class CenterInfoResource extends JsonResource
             'address_on_map' => $this->address_on_map,
             'branches' => $this->branches,
             'services' => $this->services,
+            'contact' => $this->contact,
         ];
     }
 }

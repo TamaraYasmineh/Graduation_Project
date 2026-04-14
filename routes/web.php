@@ -2,6 +2,8 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
+use App\Http\Controllers\FirebaseController;
+
 Route::get('/', function () {
     return "المشروع شغال تمام 🔥";
 });
@@ -19,3 +21,8 @@ Route::get('/test-otp-mail', function () {
 
     return 'OTP mail queued';
 });
+
+
+
+
+Route::get('/firebase-test', [FirebaseController::class, 'test']);

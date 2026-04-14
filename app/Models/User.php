@@ -88,4 +88,8 @@ public function appointments()
 {
     return $this->hasMany(Appointments::class, 'patient_id');
 }
+public function deviceTokens()
+{
+    return $this->hasMany(DeviceToken::class);
+}
 }
