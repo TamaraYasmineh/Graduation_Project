@@ -11,14 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('center_info', function (Blueprint $table) {
+        Schema::create('device_tokens', function (Blueprint $table) {
             $table->id();
-            $table->string('location');
-            $table->string('opening_hours');
-            $table->string('address_on_map');
-            $table->string('branches')->nullable();
-            $table->string('services');
-            $table->string('contact');
+            $table->foreignId('user_id');
+            $table->text('token');
             $table->timestamps();
         });
     }
@@ -28,6 +24,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('center_info');
+        Schema::dropIfExists('device_tokens');
     }
 };
