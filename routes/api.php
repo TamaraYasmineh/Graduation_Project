@@ -1,13 +1,17 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Patient\PatientController;
+use App\Http\Controllers\Doctor\BookingController;
+use App\Http\Controllers\FirebaseController;
 use App\Http\Controllers\Patient\MedicalRecordController;
+use App\Http\Controllers\Patient\PatientController;
 use App\Http\Controllers\SuperDoctor\AddAdviceAndSupportAndInfoController;
 use App\Http\Controllers\SuperDoctor\ApproveAndRejectController;
 use App\Http\Controllers\SuperDoctor\SuperDoctorController;
-use App\Http\Controllers\Doctor\BookingController;
+use App\Services\FirebaseService;
 use Illuminate\Support\Facades\Route;
+
+
 
 
 
@@ -65,3 +69,25 @@ Route::middleware(['auth:sanctum', 'role:doctor|super_doctor'])->group(function 
     Route::get('/doctor/schedules', [BookingController::class, 'getMySchedules']);
     Route::get('/doctor/getAllSchedules', [BookingController::class, 'getAllSchedules']);
 });
+});
+
+Route::post('/save-token', [FirebaseController::class, 'saveToken'])->middleware('auth:sanctum');
+// Route::get('/test-firebase', function (FirebaseService $firebase) {
+
+//     $token = "fake_token_123"; // 🔥 توكن وهمي
+
+//     try {
+//         $response = $firebase->sendNotification(
+//             $token,
+//             'Test 🔥',
+//             'Laravel is working'
+//         );
+
+//         return response()->json($response);
+
+//     } catch (\Exception $e) {
+//         return response()->json([
+//             'error' => $e->getMessage()
+//         ]);
+//     }
+// });

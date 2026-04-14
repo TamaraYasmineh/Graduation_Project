@@ -28,6 +28,7 @@ class StoreCenterInfoRequest extends FormRequest
             'address_on_map' => 'required|string',
             'branches' => 'nullable|string',
             'services' => 'required|string',
+            'contact' => 'required|string',
         ];
     }
 }

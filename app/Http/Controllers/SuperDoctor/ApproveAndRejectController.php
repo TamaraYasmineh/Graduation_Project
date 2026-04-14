@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers\SuperDoctor;
 
+use App\Http\Controllers\BaseController;
 use App\Http\Controllers\Controller;
+use App\Models\User;
+use App\Services\FirebaseService;
 use App\Services\UserService;
 use Illuminate\Http\Request;
-use App\Http\Controllers\BaseController;
+
 class ApproveAndRejectController extends BaseController
 {
   protected $userService;
@@ -21,7 +24,7 @@ class ApproveAndRejectController extends BaseController
     public function getPendingUsers(Request $request)
     {
         $result = $this->userService->getPendingUsers($request->user());
-    
+
         if (!$result['success']) {
             return $this->sendError(
                 $result['message'],
@@ -29,7 +32,7 @@ class ApproveAndRejectController extends BaseController
                 $result['code']
             );
         }
-    
+
         return $this->sendResponse(
             $result['data'],
             $result['message'] ?? 'Pending users fetched successfully'
@@ -38,7 +41,7 @@ class ApproveAndRejectController extends BaseController
     public function getRejectedUsers(Request $request)
     {
         $result = $this->userService->getRejectedUsers($request->user());
-    
+
         if (!$result['success']) {
             return $this->sendError(
                 $result['message'],
@@ -46,7 +49,7 @@ class ApproveAndRejectController extends BaseController
                 $result['code']
             );
         }
-    
+
         return $this->sendResponse(
             $result['data'],
             $result['message']
@@ -80,13 +83,25 @@ public function getSuperDoctors(Request $request)
 
     return $this->sendResponse($result['data'], $result['message']);
 }
-    
-public function approveUser($id, Request $request)
+
+public function approveUser($id, Request $request,FirebaseService $firebase)
 {
     $result = $this->userService->approveUser($id, $request->user());
 
     if (!$result['success']) {
         return response()->json($result, $result['code']);
+    }
+ $user = User::find($id);
+  if ($user) {
+        $tokens = $user->deviceTokens->pluck('token');
+
+        foreach ($tokens as $token) {
+            $firebase->sendNotification(
+                $token,
+                'تم تفعيل حسابك',
+                'يمكنك الآن تسجيل الدخول'
+            );
+        }
     }
 
     return response()->json([
@@ -95,13 +110,27 @@ public function approveUser($id, Request $request)
     ]);
 }
 
-public function rejectUser($id, Request $request)
+public function rejectUser($id, Request $request,FirebaseService $firebase)
 {
     $result = $this->userService->rejectUser($id, $request->user());
 
     if (!$result['success']) {
         return response()->json($result, $result['code']);
     }
+     $user = User::find($id);
+
+    if ($user) {
+        $tokens = $user->deviceTokens->pluck('token');
+
+        foreach ($tokens as $token) {
+            $firebase->sendNotification(
+                $token,
+                'تم رفض حسابك ',
+                'يرجى التواصل مع الإدارة'
+            );
+        }
+    }
+
 
     return response()->json([
         'success' => true,

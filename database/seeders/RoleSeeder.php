@@ -16,7 +16,11 @@ class RoleSeeder extends Seeder
         'super_doctor',
         'doctor',
         'patient',
-        'secretary'
+        'secretary',
+        'super_accounting', //المحاسبة الأساسية
+        'laboratory',//المختبر
+        'pharmacist',//صيدلي
+        'radiologist'//اخصائي الاشعة
     ];
 
     foreach ($roles as $role) {
