@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\Doctor\AppointmentController;
 use App\Http\Controllers\Doctor\BookingController;
 use App\Http\Controllers\FirebaseController;
 use App\Http\Controllers\Patient\MedicalRecordController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\SuperDoctor\ApproveAndRejectController;
 use App\Http\Controllers\SuperDoctor\SuperDoctorController;
 use App\Services\FirebaseService;
 use Illuminate\Support\Facades\Route;
+
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -65,6 +67,7 @@ Route::middleware(['auth:sanctum', 'role:doctor|super_doctor'])->group(function 
     Route::get('/available-slots', [BookingController::class, 'getAvailableSlots']);
     Route::get('/doctor/schedules', [BookingController::class, 'getMySchedules']);
     Route::get('/doctor/getAllSchedules', [BookingController::class, 'getAllSchedules']);
+    Route::get('getAppointments', [AppointmentController::class, 'getAppointments']);
 });
 
 
