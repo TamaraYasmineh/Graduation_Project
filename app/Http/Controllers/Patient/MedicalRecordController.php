@@ -21,27 +21,27 @@ class MedicalRecordController extends BaseController
         BookingService $bookingService
     ) {
         return DB::transaction(function () use ($request, $bookingService) {
-    
+
             $user = $request->user();
-    
+
             if ($user->medicalRecord) {
                 return $this->sendError('Medical record already exists', [], 400);
             }
-    
+
             $superDoctorUser = User::role('super_doctor')->first();
             $doctor = Doctor::where('user_id', $superDoctorUser->id)->first();
-    
+
             $slot = $bookingService->getFirstAvailableSlot($doctor->id);
-    
+
             if (!$slot) {
                 throw new \Exception('No available slots');
             }
-    
+
             $record = MedicalRecord::create([
                 'patient_id' => $user->id,
                 ...$request->validated()
             ]);
-    
+
             $appointment = Appointments::create([
                 'doctor_id' => $doctor->id,
                 'patient_id' => $user->id,
@@ -49,8 +49,9 @@ class MedicalRecordController extends BaseController
                 'start_time' => $slot['start_time'],
                 'end_time' => $slot['end_time'],
                 'status' => 'confirmed',
+                'session_type' => $request->session_type
             ]);
-    
+
             return $this->sendResponse([
                 'medical_record' => $record,
                 'appointment' => $appointment
