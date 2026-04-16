@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\UpdatePatientProfileRequest;
 use App\Http\Resources\UserResource;
-
+use Illuminate\Support\Facades\Storage;
 class PatientController extends BaseController
 {
     public function updateProfile(UpdatePatientProfileRequest $request)
@@ -24,10 +24,31 @@ class PatientController extends BaseController
             return $this->sendError('Patient not found', [], 404);
         }
 
+        // $user->update([
+        //     'gender' => $request->gender,
+        //     'phone' => $request->phone,
+        //     'profile_image' => $request->profile_image,
+        // ]);
+
+        if ($request->hasFile('profile_image')) {
+
+            // حذف الصورة القديمة
+            if ($user->profile_image) {
+                Storage::disk('public')->delete($user->profile_image);
+            }
+
+            // رفع الصورة الجديدة
+            $path = $request->file('profile_image')->store('profiles', 'public');
+
+        } else {
+            $path = $user->profile_image;
+        }
+
+        // تحديث بيانات المستخدم
         $user->update([
-            'gender' => $request->gender,
-            'phone' => $request->phone,
-            'profile_image' => $request->profile_image,
+            'gender' => $request->gender ?? $user->gender,
+            'phone' => $request->phone ?? $user->phone,
+            'profile_image' => $path,
         ]);
 
         $patient->update([

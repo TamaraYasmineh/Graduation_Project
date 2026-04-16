@@ -26,7 +26,7 @@ class UpdatePatientProfileRequest extends FormRequest
             return [
                 'gender' => 'nullable|in:male,female',
                 'phone' => 'nullable|string|max:20',
-                'profile_image' => 'nullable|string',
+                'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
                 'date_of_birth' => 'required|date|before:today',
                 'country' => 'nullable|string',
                 'city' => 'nullable|string',

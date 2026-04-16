@@ -16,24 +16,14 @@ class AppointmentController extends Controller
         $type = $request->query('type', 'daily');
 
         $user = Auth::user();
-
-        //  تحميل العلاقات
         $query = Appointments::with(['patient', 'doctor.user']);
 
-        //  الصلاحيات
         if ($user->hasRole('super_doctor')) {
 
-            //  السوبر دكتور يرى كل المواعيد (بما فيها مواعيده)
-            // لا نضيف أي فلتر
-
         } else {
-
-            //  الطبيب يرى مواعيده فقط
             $doctorId = $user->doctor->id;
             $query->where('doctor_id', $doctorId);
         }
-
-        // الفلترة حسب النوع
         if ($type === 'daily') {
 
             $query->whereDate('date', Carbon::today());
@@ -50,8 +40,6 @@ class AppointmentController extends Controller
             $query->whereMonth('date', Carbon::now()->month)
                   ->whereYear('date', Carbon::now()->year);
         }
-
-        //  ترتيب النتائج
        $appointments = $query->orderBy('date')
                      ->orderBy('start_time')
                      ->get();

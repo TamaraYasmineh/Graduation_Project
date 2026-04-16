@@ -60,7 +60,7 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
 
 Route::middleware(['auth:sanctum', 'role:patient'])->group(function () {});
 
-Route::middleware(['auth:sanctum', 'role:doctor|super_doctor'])->group(function () {
+Route::middleware(['auth:sanctum','approved','role:doctor|super_doctor'])->group(function () {
     Route::post('storeSchedule', [BookingController::class, 'storeSchedule']);
     Route::post('/schedule/{id}', [BookingController::class, 'updateSchedule']);
     Route::delete('/schedule/{id}', [BookingController::class, 'deleteSchedule']);

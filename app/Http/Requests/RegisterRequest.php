@@ -28,7 +28,7 @@ class RegisterRequest extends FormRequest
             'password' => 'required|string|min:6|confirmed',
             'gender' => 'nullable|in:male,female',
             'phone' => 'nullable|string|max:20',
-            'profile_image' => 'nullable|string',
+            'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'role' => ['required', Rule::in(['doctor', 'patient', 'secretary'])],
     
             // Doctor

@@ -23,26 +23,54 @@ class AuthController extends BaseController
     {
         $this->authService = $authService;
     }
+    // public function register(RegisterRequest $request)
+    // {
+    //     $result = $this->authService->register($request->validated());
+    //     $user = $result['user'];
+    //     $status = $result['status'];
+    //     if ($status === User::STATUS_APPROVED) {
+    //         $token = $user->createToken('auth_token')->plainTextToken;
+    //         return $this->sendResponse(
+    //             [
+    //                 'user' => new UserResource($user),
+    //                 'token' => $token
+    //             ],
+    //             'Registered successfully'
+    //         );
+    //     }
+    //     return $this->sendResponse(
+    //         null,
+    //         'Account created, waiting for admin approval'
+    //     );
+    // }
     public function register(RegisterRequest $request)
-    {
-        $result = $this->authService->register($request->validated());
-        $user = $result['user'];
-        $status = $result['status'];
-        if ($status === User::STATUS_APPROVED) {
-            $token = $user->createToken('auth_token')->plainTextToken;
-            return $this->sendResponse(
-                [
-                    'user' => new UserResource($user),
-                    'token' => $token
-                ],
-                'Registered successfully'
-            );
-        }
+{
+    $data = $request->validated();
+    if ($request->hasFile('profile_image')) {
+        $data['profile_image'] = $request->file('profile_image')->store('profiles', 'public');
+    }
+    $result = $this->authService->register($data);
+
+    $user = $result['user'];
+    $status = $result['status'];
+
+    if ($status === User::STATUS_APPROVED) {
+        $token = $user->createToken('auth_token')->plainTextToken;
+
         return $this->sendResponse(
-            null,
-            'Account created, waiting for admin approval'
+            [
+                'user' => new UserResource($user),
+                'token' => $token
+            ],
+            'Registered successfully'
         );
     }
+
+    return $this->sendResponse(
+        null,
+        'Account created, waiting for admin approval'
+    );
+}
     public function login(LoginRequest $request, OtpService $otpService)
     {
         $user = User::where('email', $request->email)->first();
