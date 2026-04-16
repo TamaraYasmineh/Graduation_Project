@@ -20,6 +20,9 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'status' => $this->status,
             'role' => $this->role,
+            'profile_image' => $this->profile_image 
+    ? asset('storage/' . $this->profile_image) 
+    : null,
            'patient' => PatientResource::make($this->whenLoaded('patient')),
         ];
     }
