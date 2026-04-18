@@ -13,7 +13,8 @@ use App\Services\BookingService;
 use App\Http\Requests\StoreMedicalRecordRequest;
 use App\Http\Resources\MedicalRecordResource;
 use Illuminate\Support\Facades\DB;
-
+use App\Http\Requests\BookAppointmentRequest;
+use App\Http\Resources\BookAppointmentResource;
 class MedicalRecordController extends BaseController
 {
     public function storemedicalRecord(
@@ -34,7 +35,7 @@ class MedicalRecordController extends BaseController
             $slot = $bookingService->getFirstAvailableSlot($doctor->id);
 
             if (!$slot) {
-                throw new \Exception('No available slots');
+                return $this->sendError('لا يوجد مواعيد متاحة حالياً', [], 200);
             }
 
             $record = MedicalRecord::create([
@@ -57,5 +58,31 @@ class MedicalRecordController extends BaseController
                 'appointment' => $appointment
             ], 'Created + booked');
         });
+    }
+   
+    
+    public function bookAppointment(
+        BookAppointmentRequest $request,
+        BookingService $bookingService
+    ) {
+        $user = $request->user();
+        if (!$user->medicalRecord) {
+            return $this->sendError('يجب إنشاء سجل طبي أولاً', [], 400);
+        }
+    
+        $result = $bookingService->bookAppointment(
+            $user,
+            $request->doctor_id,
+            $request->date
+        );
+    
+        if ($result['error']) {
+            return $this->sendError($result['message'], [], 200);
+        }
+    
+        return $this->sendResponse(
+            new BookAppointmentResource($result['data']),
+            'تم الحجز بنجاح'
+        );
     }
 }

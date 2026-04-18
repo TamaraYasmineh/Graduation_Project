@@ -4,8 +4,8 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-
-class UserResource extends JsonResource
+use Carbon\Carbon;
+class BookAppointmentResource extends JsonResource
 {
     /**
      * Transform the resource into an array.
@@ -16,14 +16,11 @@ class UserResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'name' => $this->name,
-            'email' => $this->email,
+            'date' => $this->date,
+            'day' => Carbon::parse($this->date)->translatedFormat('l'),
+            'start_time' => $this->start_time,
+            'end_time' => $this->end_time,
             'status' => $this->status,
-            'role' => $this->role,
-            'profile_image' => $this->profile_image 
-    ? asset('storage/' . $this->profile_image) 
-    : null,
-           'patient' => PatientResource::make($this->whenLoaded('patient')),
         ];
     }
 }

@@ -11,7 +11,7 @@ use App\Http\Controllers\SuperDoctor\ApproveAndRejectController;
 use App\Http\Controllers\SuperDoctor\SuperDoctorController;
 use App\Services\FirebaseService;
 use Illuminate\Support\Facades\Route;
-
+use App\Models\DeviceToken;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -32,6 +32,7 @@ Route::middleware(['auth:sanctum', 'role:super_doctor|patient'])->group(function
     Route::get('/showPsychologicalSupport', [AddAdviceAndSupportAndInfoController::class, 'showPsychologicalSupport']);
 
     Route::post('/medical-record', [MedicalRecordController::class, 'storemedicalRecord']);
+    Route::get('/doctors-schedules', [BookingController::class, 'getDoctorsWithSchedules']);
 });
 
 Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
@@ -58,9 +59,12 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
 });
 
 
-Route::middleware(['auth:sanctum', 'role:patient'])->group(function () {});
+Route::middleware(['auth:sanctum', 'role:patient'])->group(function () {
+    Route::post('/book-appointment', [MedicalRecordController::class, 'bookAppointment']);
+    Route::post('/getAvailableAppointments', [AppointmentController::class, 'getAvailableAppointments']);
+});
 
-Route::middleware(['auth:sanctum', 'role:doctor|super_doctor'])->group(function () {
+Route::middleware(['auth:sanctum','approved','role:doctor|super_doctor'])->group(function () {
     Route::post('storeSchedule', [BookingController::class, 'storeSchedule']);
     Route::post('/schedule/{id}', [BookingController::class, 'updateSchedule']);
     Route::delete('/schedule/{id}', [BookingController::class, 'deleteSchedule']);
@@ -68,10 +72,10 @@ Route::middleware(['auth:sanctum', 'role:doctor|super_doctor'])->group(function 
     Route::get('/doctor/schedules', [BookingController::class, 'getMySchedules']);
     Route::get('/doctor/getAllSchedules', [BookingController::class, 'getAllSchedules']);
     Route::get('getAppointments', [AppointmentController::class, 'getAppointments']);
+    
 });
 
-
-Route::post('/save-token', [FirebaseController::class, 'saveToken'])->middleware('auth:sanctum');
+//Route::post('/save-token', [FirebaseController::class, 'saveToken'])->middleware('auth:sanctum');
 // Route::get('/test-firebase', function (FirebaseService $firebase) {
 
 //     $token = "fake_token_123"; // 🔥 توكن وهمي
@@ -91,3 +95,13 @@ Route::post('/save-token', [FirebaseController::class, 'saveToken'])->middleware
 //         ]);
 //     }
 // });
+Route::get('/send-test', function () {
+
+    $token = DeviceToken::first()->token;
+
+    return app(FirebaseService::class)->sendNotification(
+        $token,
+        '🔥 تجربة',
+        'وصل الإشعار ولا لا؟'
+    );
+});

@@ -12,7 +12,8 @@ use App\Models\Appointments;
 use Carbon\Carbon;
 use App\Http\Resources\ScheduleResource;
 use Illuminate\Support\Facades\Auth;
-
+use App\Models\Doctor;
+use App\Http\Resources\DoctorScheduleResource;
 class BookingController extends BaseController
 
 {
@@ -158,4 +159,13 @@ class BookingController extends BaseController
             'All schedules'
         );
     }
+    public function getDoctorsWithSchedules()
+{
+    $doctors = Doctor::with(['user', 'schedules'])->get();
+
+    return $this->sendResponse(
+        DoctorScheduleResource::collection($doctors),
+        'Doctors with schedules'
+    );
+}
 }
