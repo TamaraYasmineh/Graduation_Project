@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+/*namespace App\Http\Controllers;
 
 use App\Models\DeviceToken;
 use App\Services\FirebaseService;
@@ -35,4 +35,4 @@ public function saveFcmToken($user, $token)
         'token' => $token
     ]);
 }
-}
+}*/

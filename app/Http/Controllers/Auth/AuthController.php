@@ -14,6 +14,7 @@ use App\Services\OtpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\DeviceToken;
+use App\Services\FirebaseService;
 class AuthController extends BaseController
 
 {
@@ -23,7 +24,7 @@ class AuthController extends BaseController
     {
         $this->authService = $authService;
     }
-    public function register(RegisterRequest $request)
+    public function register(RegisterRequest $request,FirebaseService $firebase)
      {
       $data = $request->validated();
       if ($request->hasFile('profile_image')) {
@@ -34,6 +35,19 @@ class AuthController extends BaseController
        $user = $result['user'];
        $status = $result['status'];
        $this->saveFcmToken($user, $request->fcm_token);
+       if ($status === User::STATUS_PENDING) {
+        $superDoctors = User::role('super_doctor')->get();
+
+        $tokens = DeviceToken::whereIn('user_id', $superDoctors->pluck('id'))
+            ->pluck('token');
+        foreach ($tokens as $token) {
+            $firebase->sendNotification(
+                $token,
+                'New joining request🔔',
+                "There is a new request from{$user->name}"
+            );
+        }
+        }
         if ($status === User::STATUS_APPROVED) {
         $token = $user->createToken('auth_token')->plainTextToken;
         return $this->sendResponse(
@@ -55,6 +69,7 @@ class AuthController extends BaseController
         if (!$user || !Hash::check($request->password, $user->password)) {
             return $this->sendError('Invalid credentials', [], 401);
         }
+        $this->saveFcmToken($user, $request->fcm_token);
         $result = $otpService->send($request->email);
 
         if (!$result['status']) {
@@ -172,11 +187,11 @@ class AuthController extends BaseController
     }
     private function saveFcmToken($user, $token)
     {
-    if (!$token) return;
-    DeviceToken::where('token', $token)->delete();
-    DeviceToken::create([
+     if (!$token) return;
+     DeviceToken::where('token', $token)->delete();
+     DeviceToken::create([
         'user_id' => $user->id,
         'token' => $token
-    ]);
+      ]);
     }
 }

@@ -11,16 +11,12 @@ use Illuminate\Http\Request;
 
 class ApproveAndRejectController extends BaseController
 {
-  protected $userService;
-
-
+    protected $userService;
     public function __construct(UserService $userService)
     {
         $this->userService = $userService;
 
     }
-
-
     public function getPendingUsers(Request $request)
     {
         $result = $this->userService->getPendingUsers($request->user());
@@ -57,7 +53,7 @@ class ApproveAndRejectController extends BaseController
     }
 
     public function getApprovedUsers(Request $request)
-{
+    {
     $result = $this->userService->getApprovedUsers($request->user());
 
     if (!$result['success']) {
@@ -72,9 +68,9 @@ class ApproveAndRejectController extends BaseController
         $result['data'],
         $result['message']
     );
-}
-public function getSuperDoctors(Request $request)
-{
+    }
+    public function getSuperDoctors(Request $request)
+    {
     $result = $this->userService->getSuperDoctors($request->user());
 
     if (!$result['success']) {
@@ -82,35 +78,10 @@ public function getSuperDoctors(Request $request)
     }
 
     return $this->sendResponse($result['data'], $result['message']);
-}
+    }
 
-// public function approveUser($id, Request $request,FirebaseService $firebase)
-// {
-//     $result = $this->userService->approveUser($id, $request->user());
-
-//     if (!$result['success']) {
-//         return response()->json($result, $result['code']);
-//     }
-//  $user = User::find($id);
-//   if ($user) {
-//         $tokens = $user->deviceTokens->pluck('token');
-
-//         foreach ($tokens as $token) {
-//             $firebase->sendNotification(
-//                 $token,
-//                 'تم تفعيل حسابك',
-//                 'يمكنك الآن تسجيل الدخول'
-//             );
-//         }
-//     }
-
-//     return response()->json([
-//         'success' => true,
-//         'message' => $result['message']
-//     ]);
-// }
-public function approveUser($id, Request $request, FirebaseService $firebase)
-{
+   public function approveUser($id, Request $request, FirebaseService $firebase)
+   {
     $user = User::find($id);
 
     if (!$user) {
@@ -120,69 +91,42 @@ public function approveUser($id, Request $request, FirebaseService $firebase)
         ], 404);
     }
 
-    // 🔥 تحقق إذا هو approved مسبقاً
     if ($user->status === 'approved') {
         return response()->json([
             'success' => false,
-            'message' => 'الحساب مقبول مسبقاً'
+            'message' => 'The account is pre-approved'
         ], 400);
     }
 
-    // تنفيذ الموافقة
     $result = $this->userService->approveUser($id, $request->user());
 
     if (!$result['success']) {
         return response()->json($result, $result['code']);
     }
 
-    // 🔔 إرسال إشعار
     $tokens = $user->deviceTokens()->pluck('token');
 
+    $notifications = [];
+
     if ($tokens->isNotEmpty()) {
+
         foreach ($tokens as $token) {
-            $firebase->sendNotification(
+
+            $response = $firebase->sendNotification(
                 $token,
-                'تم تفعيل حسابك ✅',
-                'يمكنك الآن تسجيل الدخول'
+                'Your account has been activated',
+                'You can now log in'
             );
         }
     }
 
     return response()->json([
         'success' => true,
-        'message' => $result['message']
+        'message' => $result['message'],
     ]);
-}
-// public function rejectUser($id, Request $request,FirebaseService $firebase)
-// {
-//     $result = $this->userService->rejectUser($id, $request->user());
-
-//     if (!$result['success']) {
-//         return response()->json($result, $result['code']);
-//     }
-//      $user = User::find($id);
-
-//     if ($user) {
-//         $tokens = $user->deviceTokens->pluck('token');
-
-//         foreach ($tokens as $token) {
-//             $firebase->sendNotification(
-//                 $token,
-//                 'تم رفض حسابك ',
-//                 'يرجى التواصل مع الإدارة'
-//             );
-//         }
-//     }
-
-
-//     return response()->json([
-//         'success' => true,
-//         'message' => $result['message']
-//     ]);
-// }
-
-public function rejectUser($id, Request $request, FirebaseService $firebase)
-{
+   }
+   public function rejectUser($id, Request $request, FirebaseService $firebase)
+   {
     $user = User::find($id);
 
     if (!$user) {
@@ -192,11 +136,10 @@ public function rejectUser($id, Request $request, FirebaseService $firebase)
         ], 404);
     }
 
-    // 🔥 إذا مرفوض مسبقاً
     if ($user->status === 'rejected') {
         return response()->json([
             'success' => false,
-            'message' => 'الحساب مرفوض مسبقاً'
+            'message' => 'The account has already been rejected'
         ], 400);
     }
 
@@ -212,8 +155,8 @@ public function rejectUser($id, Request $request, FirebaseService $firebase)
         foreach ($tokens as $token) {
             $firebase->sendNotification(
                 $token,
-                'تم رفض حسابك ❌',
-                'يرجى التواصل مع الإدارة'
+                'Your account has been rejected',
+                'Please contact the administration'
             );
         }
     }
@@ -222,5 +165,5 @@ public function rejectUser($id, Request $request, FirebaseService $firebase)
         'success' => true,
         'message' => $result['message']
     ]);
-}
+   }
 }
