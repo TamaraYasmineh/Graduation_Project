@@ -30,7 +30,7 @@ class RegisterRequest extends FormRequest
             'phone' => 'nullable|string|max:20',
             'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
             'role' => ['required', Rule::in(['doctor', 'patient', 'secretary'])],
-    
+            'fcm_token' => 'nullable|string',
             // Doctor
             'specialization' => 'required_if:role,doctor|string',
             'years_of_experience' => 'nullable|integer',

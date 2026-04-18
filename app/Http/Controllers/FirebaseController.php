@@ -26,21 +26,13 @@ class FirebaseController extends Controller
         return 'Firebase Connected and Test Data Added!';
     }
 
- public function saveToken(Request $request)
+public function saveFcmToken($user, $token)
 {
-    if (!Auth::check()) {
-        return response()->json(['error' => 'Unauthenticated'], 401);
-    }
-
-    DeviceToken::updateOrCreate(
-        [
-            'user_id' => Auth::id()
-        ],
-        [
-            'token' => $request->token
-        ]
-    );
-
-    return response()->json(['success' => true]);
+    if (!$token) return;
+    DeviceToken::where('token', $token)->delete();
+    DeviceToken::create([
+        'user_id' => $user->id,
+        'token' => $token
+    ]);
 }
 }

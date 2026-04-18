@@ -84,21 +84,65 @@ public function getSuperDoctors(Request $request)
     return $this->sendResponse($result['data'], $result['message']);
 }
 
-public function approveUser($id, Request $request,FirebaseService $firebase)
+// public function approveUser($id, Request $request,FirebaseService $firebase)
+// {
+//     $result = $this->userService->approveUser($id, $request->user());
+
+//     if (!$result['success']) {
+//         return response()->json($result, $result['code']);
+//     }
+//  $user = User::find($id);
+//   if ($user) {
+//         $tokens = $user->deviceTokens->pluck('token');
+
+//         foreach ($tokens as $token) {
+//             $firebase->sendNotification(
+//                 $token,
+//                 'تم تفعيل حسابك',
+//                 'يمكنك الآن تسجيل الدخول'
+//             );
+//         }
+//     }
+
+//     return response()->json([
+//         'success' => true,
+//         'message' => $result['message']
+//     ]);
+// }
+public function approveUser($id, Request $request, FirebaseService $firebase)
 {
+    $user = User::find($id);
+
+    if (!$user) {
+        return response()->json([
+            'success' => false,
+            'message' => 'User not found'
+        ], 404);
+    }
+
+    // 🔥 تحقق إذا هو approved مسبقاً
+    if ($user->status === 'approved') {
+        return response()->json([
+            'success' => false,
+            'message' => 'الحساب مقبول مسبقاً'
+        ], 400);
+    }
+
+    // تنفيذ الموافقة
     $result = $this->userService->approveUser($id, $request->user());
 
     if (!$result['success']) {
         return response()->json($result, $result['code']);
     }
- $user = User::find($id);
-  if ($user) {
-        $tokens = $user->deviceTokens->pluck('token');
 
+    // 🔔 إرسال إشعار
+    $tokens = $user->deviceTokens()->pluck('token');
+
+    if ($tokens->isNotEmpty()) {
         foreach ($tokens as $token) {
             $firebase->sendNotification(
                 $token,
-                'تم تفعيل حسابك',
+                'تم تفعيل حسابك ✅',
                 'يمكنك الآن تسجيل الدخول'
             );
         }
@@ -109,28 +153,70 @@ public function approveUser($id, Request $request,FirebaseService $firebase)
         'message' => $result['message']
     ]);
 }
+// public function rejectUser($id, Request $request,FirebaseService $firebase)
+// {
+//     $result = $this->userService->rejectUser($id, $request->user());
 
-public function rejectUser($id, Request $request,FirebaseService $firebase)
+//     if (!$result['success']) {
+//         return response()->json($result, $result['code']);
+//     }
+//      $user = User::find($id);
+
+//     if ($user) {
+//         $tokens = $user->deviceTokens->pluck('token');
+
+//         foreach ($tokens as $token) {
+//             $firebase->sendNotification(
+//                 $token,
+//                 'تم رفض حسابك ',
+//                 'يرجى التواصل مع الإدارة'
+//             );
+//         }
+//     }
+
+
+//     return response()->json([
+//         'success' => true,
+//         'message' => $result['message']
+//     ]);
+// }
+
+public function rejectUser($id, Request $request, FirebaseService $firebase)
 {
+    $user = User::find($id);
+
+    if (!$user) {
+        return response()->json([
+            'success' => false,
+            'message' => 'User not found'
+        ], 404);
+    }
+
+    // 🔥 إذا مرفوض مسبقاً
+    if ($user->status === 'rejected') {
+        return response()->json([
+            'success' => false,
+            'message' => 'الحساب مرفوض مسبقاً'
+        ], 400);
+    }
+
     $result = $this->userService->rejectUser($id, $request->user());
 
     if (!$result['success']) {
         return response()->json($result, $result['code']);
     }
-     $user = User::find($id);
 
-    if ($user) {
-        $tokens = $user->deviceTokens->pluck('token');
+    $tokens = $user->deviceTokens()->pluck('token');
 
+    if ($tokens->isNotEmpty()) {
         foreach ($tokens as $token) {
             $firebase->sendNotification(
                 $token,
-                'تم رفض حسابك ',
+                'تم رفض حسابك ❌',
                 'يرجى التواصل مع الإدارة'
             );
         }
     }
-
 
     return response()->json([
         'success' => true,
