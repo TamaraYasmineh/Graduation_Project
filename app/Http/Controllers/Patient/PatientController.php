@@ -63,4 +63,5 @@ class PatientController extends BaseController
             'Profile updated successfully'
         );
     }
+    
 }

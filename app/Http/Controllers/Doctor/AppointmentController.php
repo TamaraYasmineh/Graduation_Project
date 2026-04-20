@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Doctor;
+
 use App\Http\Controllers\BaseController;
 use App\Models\Schedule;
 use App\Http\Controllers\Controller;
@@ -9,6 +10,8 @@ use App\Models\Appointments;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+
+class AppointmentController extends Controller
 use App\Http\Requests\GetAvailableAppointmentsRequest;
 use App\Http\Resources\AvailableAppointmentResource;
 use App\Services\AvailableAppointmentService;
@@ -17,6 +20,7 @@ class AppointmentController extends BaseController
     public function getAppointments(Request $request)
     {
         $type = $request->query('type', 'daily');
+
         $user = Auth::user();
         $query = Appointments::with(['patient', 'doctor.user']);
 
@@ -49,6 +53,11 @@ class AppointmentController extends BaseController
 return response()->json([
     'success' => true,
     'type' => $type,
+   // 'appointments' => AppointmentResource::collection($appointments)
+]);
+    }
+    }
+
     'appointments' => AppointmentResource::collection($appointments)
 ]);
     }
