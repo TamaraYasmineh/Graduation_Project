@@ -17,7 +17,6 @@ class AppointmentController extends BaseController
     public function getAppointments(Request $request)
     {
         $type = $request->query('type', 'daily');
-
         $user = Auth::user();
         $query = Appointments::with(['patient', 'doctor.user']);
 

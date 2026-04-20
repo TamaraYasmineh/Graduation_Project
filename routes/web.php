@@ -4,9 +4,9 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Mail;
 use App\Http\Controllers\FirebaseController;
 
-Route::get('/', function () {
-    return "المشروع شغال تمام 🔥";
-});
+// Route::get('/', function () {
+//     return "المشروع شغال تمام 🔥";
+// });
 Route::get('/test-mail', function () {
     Mail::raw('OTP test', function ($message) {
         $message->to('btwl46693@gmail.com')
@@ -25,4 +25,4 @@ Route::get('/test-otp-mail', function () {
 
 
 
-Route::get('/firebase-test', [FirebaseController::class, 'test']);
+//Route::get('/firebase-test', [FirebaseController::class, 'test']);

@@ -52,8 +52,13 @@ class Doctor extends Model
     {
     return $this->hasMany(Appointments::class);
     }
-    public function schedules()
-   {
-    return $this->hasMany(Schedule::class);
-   }
+//     public function schedules()
+//    {
+//     return $this->hasMany(Schedule::class);
+//    }
+public function schedules()
+{
+    return $this->hasMany(Schedule::class)
+        ->whereRaw("TIMESTAMP(date, end_time) > NOW()");
+}
 }
