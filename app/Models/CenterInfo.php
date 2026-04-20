@@ -36,5 +36,6 @@ class CenterInfo extends Model
         'address_on_map',
         'branches',
         'services',
+        'contact'
     ];
 }

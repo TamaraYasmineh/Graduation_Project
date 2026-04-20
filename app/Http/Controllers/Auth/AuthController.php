@@ -13,7 +13,8 @@ use App\Services\AuthService;
 use App\Services\OtpService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-
+use App\Models\DeviceToken;
+use App\Services\FirebaseService;
 class AuthController extends BaseController
 
 {
@@ -77,6 +78,7 @@ class AuthController extends BaseController
         if (!$user || !Hash::check($request->password, $user->password)) {
             return $this->sendError('Invalid credentials', [], 401);
         }
+        $this->saveFcmToken($user, $request->fcm_token);
         $result = $otpService->send($request->email);
 
         if (!$result['status']) {
@@ -106,7 +108,8 @@ class AuthController extends BaseController
                 $result['code']
             );
         }
-
+        $user = $result['data']['user'];
+        $this->saveFcmToken($user, $request->fcm_token);
         return $this->sendResponse(
             [
                 'token' => $result['data']['token'],
@@ -190,5 +193,14 @@ class AuthController extends BaseController
         $user->tokens()->delete();
 
         return $this->sendResponse(null, 'Password reset successfully');
+    }
+    private function saveFcmToken($user, $token)
+    {
+     if (!$token) return;
+     DeviceToken::where('token', $token)->delete();
+     DeviceToken::create([
+        'user_id' => $user->id,
+        'token' => $token
+      ]);
     }
 }

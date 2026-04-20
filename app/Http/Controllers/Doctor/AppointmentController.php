@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Doctor;
 
+use App\Http\Controllers\BaseController;
+use App\Models\Schedule;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\AppointmentResource;
 use App\Models\Appointments;
@@ -10,6 +12,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class AppointmentController extends Controller
+use App\Http\Requests\GetAvailableAppointmentsRequest;
+use App\Http\Resources\AvailableAppointmentResource;
+use App\Services\AvailableAppointmentService;
+class AppointmentController extends BaseController
 {
     public function getAppointments(Request $request)
     {
@@ -51,4 +57,35 @@ return response()->json([
 ]);
     }
     }
+
+    'appointments' => AppointmentResource::collection($appointments)
+]);
+    }
+
+    public function getAvailableAppointments(
+        GetAvailableAppointmentsRequest $request,
+        AvailableAppointmentService $service
+    ) {
+        $result = $service->getAvailable(
+            $request->doctor_id,
+            $request->date
+        );
+    
+        if (!$result['success']) {
+            return $this->sendError(
+                $result['message'],
+                [],
+                400
+            );
+        }
+    
+        return $this->sendResponse(
+            new AvailableAppointmentResource($result),
+            'Available appointments fetched successfully'
+        );
+    }
+    }
+
+
+    
 

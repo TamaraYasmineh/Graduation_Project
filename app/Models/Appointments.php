@@ -39,6 +39,7 @@ class Appointments extends Model
         'start_time',
         'end_time',
         'status',
+        'session_type'
     ];
 
     public function doctor()

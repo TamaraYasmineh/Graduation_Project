@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class VerifyOtpRequest extends FormRequest
+class GetAvailableAppointmentsRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -23,9 +23,8 @@ class VerifyOtpRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'fcm_token' => 'nullable|string',
-            'email' => 'required|email',
-            'code' => 'required|string',
+            'doctor_id' => 'required|exists:doctors,id',
+            'date' => 'required|date'
         ];
     }
 }

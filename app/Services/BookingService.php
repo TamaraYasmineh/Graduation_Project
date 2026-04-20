@@ -51,4 +51,56 @@ class BookingService
 
         return null; 
     }
+    public function book($user, $doctorId, $date, $startTime)
+    {
+        // ✅ جيب الدوام
+        $schedule = Schedule::where('doctor_id', $doctorId)
+            ->where('date', $date)
+            ->first();
+    
+        if (!$schedule) {
+            return ['success' => false, 'message' => 'لا يوجد دوام'];
+        }
+    
+        $duration = $schedule->slot_duration;
+    
+        // 🔥 احسب end_time من الباك
+        $endTime = Carbon::parse($startTime)
+            ->addMinutes($duration)
+            ->format('H:i');
+    
+        // ❗ تحقق إذا محجوز
+        $exists = Appointments::where('doctor_id', $doctorId)
+            ->where('date', $date)
+            ->where('start_time', $startTime)
+            ->exists();
+    
+        if ($exists) {
+            return ['success' => false, 'message' => 'هذا الموعد تم حجزه'];
+        }
+    
+        // ❗ شرط: مرة بالشهر
+        $alreadyBooked = Appointments::where('patient_id', $user->id)
+            ->whereMonth('date', Carbon::parse($date)->month)
+            ->exists();
+    
+        if ($alreadyBooked) {
+            return ['success' => false, 'message' => 'لديك حجز مسبق هذا الشهر'];
+        }
+    
+        // ✅ إنشاء الحجز
+        $appointment = Appointments::create([
+            'doctor_id' => $doctorId,
+            'patient_id' => $user->id,
+            'date' => $date,
+            'start_time' => $startTime,
+            'end_time' => $endTime,
+            'status' => 'confirmed'
+        ]);
+    
+        return [
+            'success' => true,
+            'data' => $appointment
+        ];
+    }
 }

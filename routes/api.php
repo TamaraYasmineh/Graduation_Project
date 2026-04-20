@@ -1,15 +1,17 @@
 <?php
 
 use App\Http\Controllers\Auth\AuthController;
-use App\Http\Controllers\Patient\PatientController;
+use App\Http\Controllers\Doctor\AppointmentController;
+use App\Http\Controllers\Doctor\BookingController;
+use App\Http\Controllers\FirebaseController;
 use App\Http\Controllers\Patient\MedicalRecordController;
+use App\Http\Controllers\Patient\PatientController;
 use App\Http\Controllers\SuperDoctor\AddAdviceAndSupportAndInfoController;
 use App\Http\Controllers\SuperDoctor\ApproveAndRejectController;
 use App\Http\Controllers\SuperDoctor\SuperDoctorController;
-use App\Http\Controllers\Doctor\BookingController;
+use App\Services\FirebaseService;
 use Illuminate\Support\Facades\Route;
-
-
+use App\Models\DeviceToken;
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -30,6 +32,7 @@ Route::middleware(['auth:sanctum', 'role:super_doctor|patient'])->group(function
     Route::get('/showPsychologicalSupport', [AddAdviceAndSupportAndInfoController::class, 'showPsychologicalSupport']);
 
     Route::post('/medical-record', [MedicalRecordController::class, 'storemedicalRecord']);
+    Route::get('/doctors-schedules', [BookingController::class, 'getDoctorsWithSchedules']);
 });
 
 Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
@@ -52,11 +55,17 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
     Route::post('/approveUser/{id}', [ApproveAndRejectController::class, 'approveUser']);
     Route::post('/rejectUser/{id}', [ApproveAndRejectController::class, 'rejectUser']);
 
-     Route::post('toggleDoctorRole/{id}', [SuperDoctorController::class, 'toggleDoctorRole']);
-    });
-   
+    Route::post('toggleDoctorRole/{id}', [SuperDoctorController::class, 'toggleDoctorRole']);
+});
 
-Route::middleware(['auth:sanctum', 'role:patient'])->group(function () {});
+
+
+Route::middleware(['auth:sanctum', 'role:patient'])->group(function () {
+    Route::post('/book-appointment', [MedicalRecordController::class, 'bookAppointment']);
+    Route::post('/getAvailableAppointments', [AppointmentController::class, 'getAvailableAppointments']);
+    Route::get('/myAppointments', [MedicalRecordController::class, 'myAppointments']);
+
+});
 
 Route::middleware(['auth:sanctum','approved','role:doctor|super_doctor'])->group(function () {
     Route::post('storeSchedule', [BookingController::class, 'storeSchedule']);
@@ -65,4 +74,10 @@ Route::middleware(['auth:sanctum','approved','role:doctor|super_doctor'])->group
     Route::get('/available-slots', [BookingController::class, 'getAvailableSlots']);
     Route::get('/doctor/schedules', [BookingController::class, 'getMySchedules']);
     Route::get('/doctor/getAllSchedules', [BookingController::class, 'getAllSchedules']);
+    Route::get('getAppointments', [AppointmentController::class, 'getAppointments']);
+    Route::get('/doctor/getAllSchedulesFilterDay', [BookingController::class, 'getAllSchedulesFilterDay']);
+    Route::post('/doctor/getAllSchedulesMonth', [BookingController::class, 'getAllSchedulesMonth']);
+    Route::get('/doctor/getAllSchedulesWeek', [BookingController::class, 'getAllSchedulesWeek']);
 });
+
+
