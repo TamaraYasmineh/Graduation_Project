@@ -33,7 +33,15 @@ class BookingController extends BaseController
 
         $data = $request->validated();
         $data['doctor_id'] = $doctor->id;
+        $exists = Schedule::where('doctor_id', $doctor->id)
+        ->where('date', $data['date'])
+        ->where('start_time', $data['start_time'])
+        ->where('end_time', $data['end_time'])
+        ->exists();
 
+    if ($exists) {
+        return $this->sendError(' لا يمكنك تكرار الدوام  ', [], 400);
+    }
         $schedule = Schedule::create($data);
 
         return $this->sendResponse(
@@ -160,12 +168,90 @@ class BookingController extends BaseController
         );
     }
     public function getDoctorsWithSchedules()
-{
-    $doctors = Doctor::with(['user', 'schedules'])->get();
+   {
+    $doctors = Doctor::with(['user', 'schedules'])
+    ->withCount('appointments') 
+    ->get();
 
     return $this->sendResponse(
         DoctorScheduleResource::collection($doctors),
         'Doctors with schedules'
+    );
+    }
+public function getAllSchedulesFilterDay(Request $request)
+{
+    $type = $request->query('type', 'daily');
+
+    $query = Schedule::with('doctor.user');
+
+    if ($type === 'daily') {
+        $query->whereDate('date', Carbon::today());
+
+    } elseif ($type === 'weekly') {
+        $query->whereBetween('date', [
+            Carbon::now()->startOfWeek(),
+            Carbon::now()->endOfWeek()
+        ]);
+
+    } elseif ($type === 'monthly') {
+        $query->whereMonth('date', Carbon::now()->month)
+              ->whereYear('date', Carbon::now()->year);
+    }
+
+    $schedules = $query->orderBy('date')->get();
+
+    return $this->sendResponse(
+        ScheduleResource::collection($schedules),
+        'Schedules filtered'
+    );
+}
+public function getAllSchedulesMonth(Request $request)
+{
+    $request->validate([
+        'month' => 'required|integer|min:1|max:12',
+        'year' => 'required|integer'
+    ]);
+
+    $query = Schedule::with('doctor.user');
+
+    $query->whereMonth('date', $request->month)
+          ->whereYear('date', $request->year);
+
+    $schedules = $query->orderBy('date')->get();
+
+    return $this->sendResponse(
+        ScheduleResource::collection($schedules),
+        'Schedules filtered'
+    );
+}
+public function getAllSchedulesWeek(Request $request)
+{
+    $type = $request->query('type', 'daily');
+
+    $query = Schedule::with('doctor.user');
+
+    if ($type === 'daily') {
+
+        $query->whereDate('date', Carbon::today());
+
+    } elseif ($type === 'weekly') {
+
+        $query->whereBetween('date', [
+            Carbon::now()->startOfWeek(),
+            Carbon::now()->endOfWeek()
+        ]);
+
+    } elseif ($type === 'monthly') {
+
+        $query->whereMonth('date', now()->month)
+              ->whereYear('date', now()->year);
+    }
+
+    $schedules = $query->orderBy('date')->get();
+
+    return $this->sendResponse(
+        ScheduleResource::collection($schedules),
+        'Schedules filtered'
     );
 }
 }

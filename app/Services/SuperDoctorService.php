@@ -13,12 +13,11 @@ class SuperDoctorService
     }
     public function getAllDoctorsWithSpecialization($specialization = null)
     {
-        $query = Doctor::with('user');
-
+        $query = Doctor::with(['user', 'schedules']);
         if ($specialization) {
             $query->where('specialization', 'like', "%$specialization%");
         }
-
+    
         return $query->get();
     }
 
@@ -42,7 +41,7 @@ class SuperDoctorService
                 'code' => 403
             ];
         }
-        //  منع تعديل نفسك
+        
         if ($authUser->id === $targetUser->id) {
             return [
                 'success' => false,
@@ -51,7 +50,7 @@ class SuperDoctorService
             ];
         }
 
-        //  السماح فقط للأطباء
+       
         if (!$targetUser->hasAnyRole(['doctor', 'super_doctor'])) {
             return [
                 'success' => false,
@@ -60,7 +59,7 @@ class SuperDoctorService
             ];
         }
 
-        //  منع حذف آخر سوبر دكتور
+        
         if (
             $targetUser->hasRole('super_doctor') &&
             User::role('super_doctor')->count() === 1
@@ -73,7 +72,7 @@ class SuperDoctorService
             ];
         }
 
-        //  ترقية
+       
         if ($targetUser->hasRole('doctor')) {
 
             $targetUser->syncRoles(['super_doctor']);
@@ -84,7 +83,7 @@ class SuperDoctorService
             ];
         }
 
-        //  تخفيض
+       
         if ($targetUser->hasRole('super_doctor')) {
 
             $targetUser->syncRoles(['doctor']);
@@ -95,7 +94,7 @@ class SuperDoctorService
             ];
         }
 
-        // fallback
+        
         return [
             'success' => false,
             'message' => 'Unexpected error',

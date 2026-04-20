@@ -25,6 +25,7 @@ return [
             'license_number' => $this->license_number,
             'bio' => $this->bio,
             'department' => $this->department,
+            'profile_image'=>$this->profile_image ? asset('storage/' . $this->image): null,
         ];
     }
 

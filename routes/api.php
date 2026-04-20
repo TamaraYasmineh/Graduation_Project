@@ -62,6 +62,8 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
 Route::middleware(['auth:sanctum', 'role:patient'])->group(function () {
     Route::post('/book-appointment', [MedicalRecordController::class, 'bookAppointment']);
     Route::post('/getAvailableAppointments', [AppointmentController::class, 'getAvailableAppointments']);
+    Route::get('/myAppointments', [MedicalRecordController::class, 'myAppointments']);
+
 });
 
 Route::middleware(['auth:sanctum','approved','role:doctor|super_doctor'])->group(function () {
@@ -72,36 +74,9 @@ Route::middleware(['auth:sanctum','approved','role:doctor|super_doctor'])->group
     Route::get('/doctor/schedules', [BookingController::class, 'getMySchedules']);
     Route::get('/doctor/getAllSchedules', [BookingController::class, 'getAllSchedules']);
     Route::get('getAppointments', [AppointmentController::class, 'getAppointments']);
-    
+    Route::get('/doctor/getAllSchedulesFilterDay', [BookingController::class, 'getAllSchedulesFilterDay']);
+    Route::post('/doctor/getAllSchedulesMonth', [BookingController::class, 'getAllSchedulesMonth']);
+    Route::get('/doctor/getAllSchedulesWeek', [BookingController::class, 'getAllSchedulesWeek']);
 });
 
-//Route::post('/save-token', [FirebaseController::class, 'saveToken'])->middleware('auth:sanctum');
-// Route::get('/test-firebase', function (FirebaseService $firebase) {
 
-//     $token = "fake_token_123"; // 🔥 توكن وهمي
-
-//     try {
-//         $response = $firebase->sendNotification(
-//             $token,
-//             'Test 🔥',
-//             'Laravel is working'
-//         );
-
-//         return response()->json($response);
-
-//     } catch (\Exception $e) {
-//         return response()->json([
-//             'error' => $e->getMessage()
-//         ]);
-//     }
-// });
-Route::get('/send-test', function () {
-
-    $token = DeviceToken::first()->token;
-
-    return app(FirebaseService::class)->sendNotification(
-        $token,
-        '🔥 تجربة',
-        'وصل الإشعار ولا لا؟'
-    );
-});

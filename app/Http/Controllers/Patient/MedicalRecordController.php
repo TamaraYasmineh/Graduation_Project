@@ -63,26 +63,33 @@ class MedicalRecordController extends BaseController
     
     public function bookAppointment(
         BookAppointmentRequest $request,
-        BookingService $bookingService
+        BookingService $service
     ) {
-        $user = $request->user();
-        if (!$user->medicalRecord) {
-            return $this->sendError('يجب إنشاء سجل طبي أولاً', [], 400);
-        }
-    
-        $result = $bookingService->bookAppointment(
-            $user,
+        $result = $service->book(
+            $request->user(),
             $request->doctor_id,
-            $request->date
+            $request->date,
+            $request->start_time
         );
     
-        if ($result['error']) {
-            return $this->sendError($result['message'], [], 200);
+        if (!$result['success']) {
+            return $this->sendError($result['message']);
         }
     
         return $this->sendResponse(
-            new BookAppointmentResource($result['data']),
+            $result['data'],
             'تم الحجز بنجاح'
         );
     }
+    public function myAppointments(Request $request)
+{
+    $user = $request->user();
+
+    $appointments = Appointments::with(['doctor.user'])
+        ->where('patient_id', $user->id)
+        ->orderBy('date', 'desc')
+        ->get();
+
+    return $this->sendResponse($appointments, 'My appointments');
+}
 }
