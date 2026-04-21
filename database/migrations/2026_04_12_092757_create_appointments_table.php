@@ -19,6 +19,7 @@ return new class extends Migration
             $table->time('start_time');
             $table->time('end_time');
             $table->enum('status', ['pending','confirmed','cancelled','completed'])->default('pending');
+            $table->string('session_type')->nullable();
             $table->timestamps();
         });
     }

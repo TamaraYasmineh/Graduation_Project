@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
+
 /**
  * @property int $id
  * @property string $name
@@ -67,7 +68,7 @@ use Spatie\Permission\Traits\HasRoles;
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable,HasApiTokens, HasRoles;
+    use HasFactory, Notifiable, HasApiTokens, HasRoles;
 
     /**
      * The attributes that are mass assignable.
@@ -112,41 +113,52 @@ class User extends Authenticatable
     }
     public function doctor()
     {
-     return $this->hasOne(Doctor::class);
+        return $this->hasOne(Doctor::class);
     }
 
     public function patient()
     {
-     return $this->hasOne(Patient::class);
+        return $this->hasOne(Patient::class);
     }
 
     public function secretary()
     {
-     return $this->hasOne(Secretary::class);
+        return $this->hasOne(Secretary::class);
     }
     public function getRoleAttribute()
     {
-    return $this->roles->first()?->name;
+        return $this->roles->first()?->name;
     }
     public function supports()
-{
-    return $this->hasMany(PsychologicalSupport::class, 'created_by');
-}
-public function advices()
-{
-    return $this->hasMany(Advice::class, 'created_by');
-}
-public function medicalRecord()
-{
-    return $this->hasOne(MedicalRecord::class, 'patient_id');
-}
-public function appointments()
-{
-    return $this->hasMany(Appointments::class, 'patient_id');
-}
-public function deviceTokens()
-{
-    return $this->hasMany(DeviceToken::class);
-}
+    {
+        return $this->hasMany(PsychologicalSupport::class, 'created_by');
+    }
+    public function advices()
+    {
+        return $this->hasMany(Advice::class, 'created_by');
+    }
+    public function medicalRecord()
+    {
+        return $this->hasOne(MedicalRecord::class, 'patient_id');
+    }
+    public function appointments()
+    {
+        return $this->hasMany(Appointments::class, 'patient_id');
+    }
+    public function deviceTokens()
+    {
+        return $this->hasMany(DeviceToken::class);
+    }
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
 
+    public function payments()
+    {
+        return $this->hasManyThrough(
+            Payment::class,
+            Order::class
+        );
+    }
 }

@@ -6,12 +6,14 @@ use App\Http\Controllers\Doctor\BookingController;
 use App\Http\Controllers\FirebaseController;
 use App\Http\Controllers\Patient\MedicalRecordController;
 use App\Http\Controllers\Patient\PatientController;
+use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SuperDoctor\AddAdviceAndSupportAndInfoController;
 use App\Http\Controllers\SuperDoctor\ApproveAndRejectController;
 use App\Http\Controllers\SuperDoctor\SuperDoctorController;
+use App\Models\DeviceToken;
 use App\Services\FirebaseService;
 use Illuminate\Support\Facades\Route;
-use App\Models\DeviceToken;
+
 
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/login', [AuthController::class, 'login']);
@@ -80,3 +82,12 @@ Route::middleware(['auth:sanctum','approved','role:doctor|super_doctor'])->group
 });
 
 
+Route::post('/pay', [PaymentController::class, 'create']);
+
+Route::get('/payment/callback/{order}', [PaymentController::class, 'callback'])
+    ->name('payment.callback');
+
+Route::get('/payment/trigger/{order}', [PaymentController::class, 'trigger'])
+    ->name('payment.trigger');
+
+Route::post('/payment/cancel/{paymentId}', [PaymentController::class, 'cancel']);
