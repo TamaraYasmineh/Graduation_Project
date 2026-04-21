@@ -24,32 +24,40 @@ class AuthController extends BaseController
     {
         $this->authService = $authService;
     }
-    public function register(RegisterRequest $request,FirebaseService $firebase)
-     {
-      $data = $request->validated();
-      if ($request->hasFile('profile_image')) {
+    // public function register(RegisterRequest $request)
+    // {
+    //     $result = $this->authService->register($request->validated());
+    //     $user = $result['user'];
+    //     $status = $result['status'];
+    //     if ($status === User::STATUS_APPROVED) {
+    //         $token = $user->createToken('auth_token')->plainTextToken;
+    //         return $this->sendResponse(
+    //             [
+    //                 'user' => new UserResource($user),
+    //                 'token' => $token
+    //             ],
+    //             'Registered successfully'
+    //         );
+    //     }
+    //     return $this->sendResponse(
+    //         null,
+    //         'Account created, waiting for admin approval'
+    //     );
+    // }
+    public function register(RegisterRequest $request)
+{
+    $data = $request->validated();
+    if ($request->hasFile('profile_image')) {
         $data['profile_image'] = $request->file('profile_image')->store('profiles', 'public');
-        }
-       $result = $this->authService->register($data);
+    }
+    $result = $this->authService->register($data);
 
-       $user = $result['user'];
-       $status = $result['status'];
-       $this->saveFcmToken($user, $request->fcm_token);
-       if ($status === User::STATUS_PENDING) {
-        $superDoctors = User::role('super_doctor')->get();
+    $user = $result['user'];
+    $status = $result['status'];
 
-        $tokens = DeviceToken::whereIn('user_id', $superDoctors->pluck('id'))
-            ->pluck('token');
-        foreach ($tokens as $token) {
-            $firebase->sendNotification(
-                $token,
-                'New joining request🔔',
-                "There is a new request from{$user->name}"
-            );
-        }
-        }
-        if ($status === User::STATUS_APPROVED) {
+    if ($status === User::STATUS_APPROVED) {
         $token = $user->createToken('auth_token')->plainTextToken;
+
         return $this->sendResponse(
             [
                 'user' => new UserResource($user),
@@ -57,12 +65,13 @@ class AuthController extends BaseController
             ],
             'Registered successfully'
         );
-        }
-        return $this->sendResponse(
+    }
+
+    return $this->sendResponse(
         null,
         'Account created, waiting for admin approval'
-         );
-     }
+    );
+}
     public function login(LoginRequest $request, OtpService $otpService)
     {
         $user = User::where('email', $request->email)->first();
