@@ -11,8 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('appointments', function (Blueprint $table) {
-        $table->string('session_type')->nullable()->after('status');
+        Schema::create('orders', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('user_id')->nullable();
+            $table->bigInteger('amount');
+            $table->enum('status', ['pending','accepted','failed','canceled'])->default('pending');
+            $table->timestamps();
         });
     }
 
@@ -21,8 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('appointments', function (Blueprint $table) {
-        $table->dropColumn('session_type');
-        });
+        Schema::dropIfExists('orders');
     }
 };
