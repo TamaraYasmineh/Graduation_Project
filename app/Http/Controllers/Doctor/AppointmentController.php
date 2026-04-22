@@ -10,8 +10,6 @@ use App\Models\Appointments;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-
-class AppointmentController extends Controller
 use App\Http\Requests\GetAvailableAppointmentsRequest;
 use App\Http\Resources\AvailableAppointmentResource;
 use App\Services\AvailableAppointmentService;
@@ -56,11 +54,7 @@ return response()->json([
    // 'appointments' => AppointmentResource::collection($appointments)
 ]);
     }
-    }
-
-    'appointments' => AppointmentResource::collection($appointments)
-]);
-    }
+    
 
     public function getAvailableAppointments(
         GetAvailableAppointmentsRequest $request,
@@ -70,7 +64,7 @@ return response()->json([
             $request->doctor_id,
             $request->date
         );
-    
+
         if (!$result['success']) {
             return $this->sendError(
                 $result['message'],
@@ -78,7 +72,7 @@ return response()->json([
                 400
             );
         }
-    
+
         return $this->sendResponse(
             new AvailableAppointmentResource($result),
             'Available appointments fetched successfully'
@@ -87,5 +81,5 @@ return response()->json([
     }
 
 
-    
+
 
