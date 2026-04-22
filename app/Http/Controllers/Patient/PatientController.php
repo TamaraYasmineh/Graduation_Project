@@ -8,6 +8,7 @@ use App\Http\Controllers\BaseController;
 use App\Http\Requests\UpdatePatientProfileRequest;
 use App\Http\Resources\UserResource;
 use Illuminate\Support\Facades\Storage;
+
 class PatientController extends BaseController
 {
     public function updateProfile(UpdatePatientProfileRequest $request)
@@ -39,7 +40,6 @@ class PatientController extends BaseController
 
             // رفع الصورة الجديدة
             $path = $request->file('profile_image')->store('profiles', 'public');
-
         } else {
             $path = $user->profile_image;
         }
@@ -51,17 +51,16 @@ class PatientController extends BaseController
             'profile_image' => $path,
         ]);
 
-        $patient->update([
-            'date_of_birth' => $request->date_of_birth,
-            'country' => $request->country,
-            'city' => $request->city,
-            'emergency_contact' => $request->emergency_contact,
-        ]);
+        $patient->update($request->only([
+            'date_of_birth',
+            'country',
+            'city',
+            'emergency_contact',
+        ]));
 
         return $this->sendResponse(
             new UserResource($user->load('patient')),
             'Profile updated successfully'
         );
     }
-    
 }

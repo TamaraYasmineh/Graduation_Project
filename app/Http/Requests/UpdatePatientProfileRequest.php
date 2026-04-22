@@ -20,18 +20,18 @@ class UpdatePatientProfileRequest extends FormRequest
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
-  
+
         public function rules(): array
         {
             return [
-                'gender' => 'nullable|in:male,female',
-                'phone' => 'nullable|string|max:20',
-                'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
-                'date_of_birth' => 'required|date|before:today',
-                'country' => 'nullable|string',
-                'city' => 'nullable|string',
-                'emergency_contact' => 'required|string|max:20',
+                'gender' => 'sometimes|in:male,female',
+                'phone' => 'sometimes|string|max:20',
+                'profile_image' => 'sometimes|image|mimes:jpg,jpeg,png|max:2048',
+                'date_of_birth' => 'sometimes|date|before:today',
+                'country' => 'sometimes|string',
+                'city' => 'sometimes|string',
+                'emergency_contact' => 'sometimes|string|max:20',
             ];
         }
-    
+
 }
