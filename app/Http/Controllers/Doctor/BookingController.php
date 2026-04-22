@@ -3,17 +3,17 @@
 namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\BaseController;
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Services\BookingService;
 use App\Http\Requests\StoreScheduleRequest;
-use App\Models\Schedule;
-use App\Models\Appointments;
-use Carbon\Carbon;
-use App\Http\Resources\ScheduleResource;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Doctor;
 use App\Http\Resources\DoctorScheduleResource;
+use App\Http\Resources\ScheduleResource;
+use App\Models\Appointment;
+use App\Models\Doctor;
+use App\Models\Schedule;
+use App\Services\BookingService;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+
 class BookingController extends BaseController
 
 {
@@ -120,7 +120,7 @@ class BookingController extends BaseController
             $slotStart = $start->format('H:i');
             $slotEnd = $start->copy()->addMinutes($duration)->format('H:i');
 
-            $isBooked = Appointments::where('doctor_id', $doctorId)
+            $isBooked = Appointment::where('doctor_id', $doctorId)
                 ->where('date', $date)
                 ->where('start_time', $slotStart)
                 ->exists();
@@ -170,7 +170,7 @@ class BookingController extends BaseController
     public function getDoctorsWithSchedules()
    {
     $doctors = Doctor::with(['user', 'schedules'])
-    ->withCount('appointments') 
+    ->withCount('appointments')
     ->get();
 
     return $this->sendResponse(

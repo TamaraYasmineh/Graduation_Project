@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\Appointments;
+use App\Models\Appointment;
 use App\Models\Schedule;
 use Carbon\Carbon;
 
@@ -32,7 +32,7 @@ class AvailableAppointmentService
             $slotStart = $start->format('H:i');
             $slotEnd = $start->copy()->addMinutes($duration)->format('H:i');
 
-            $exists = Appointments::where('doctor_id', $doctorId)
+            $exists = Appointment::where('doctor_id', $doctorId)
                 ->where('date', $date)
                 ->where('start_time', $slotStart)
                 ->exists();
