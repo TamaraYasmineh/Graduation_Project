@@ -30,7 +30,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointments whereUpdatedAt($value)
  * @mixin \Eloquent
  */
-class Appointments extends Model
+class Appointment extends Model
 {
     protected $fillable = [
         'doctor_id',

@@ -3,16 +3,17 @@
 namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\BaseController;
-use App\Models\Schedule;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\GetAvailableAppointmentsRequest;
 use App\Http\Resources\AppointmentResource;
-use App\Models\Appointments;
+use App\Http\Resources\AvailableAppointmentResource;
+use App\Models\Appointment;
+use App\Models\Schedule;
+use App\Services\AvailableAppointmentService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Http\Requests\GetAvailableAppointmentsRequest;
-use App\Http\Resources\AvailableAppointmentResource;
-use App\Services\AvailableAppointmentService;
+
 class AppointmentController extends BaseController
 {
     public function getAppointments(Request $request)
@@ -20,7 +21,7 @@ class AppointmentController extends BaseController
         $type = $request->query('type', 'daily');
 
         $user = Auth::user();
-        $query = Appointments::with(['patient', 'doctor.user']);
+        $query = Appointment::with(['patient', 'doctor.user']);
 
         if ($user->hasRole('super_doctor')) {
 
@@ -54,7 +55,7 @@ return response()->json([
    // 'appointments' => AppointmentResource::collection($appointments)
 ]);
     }
-    
+
 
     public function getAvailableAppointments(
         GetAvailableAppointmentsRequest $request,
