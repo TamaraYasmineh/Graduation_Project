@@ -41,11 +41,34 @@ class FirebaseService
 
 //     return $this->messaging->send($message);
 // }
+// public function sendNotification($token, $title, $body)
+// {
+//     try {
+//         $message = CloudMessage::withTarget('token', $token)
+//             ->withNotification(Notification::create($title, $body));
+
+//         return [
+//             'success' => true,
+//             'id' => $this->messaging->send($message)
+//         ];
+
+//     } catch (MessagingException $e) {
+//         \App\Models\DeviceToken::where('token', $token)->delete();
+
+//         return [
+//             'success' => false,
+//             'error' => $e->getMessage()
+//         ];
+//     }
+// }
 public function sendNotification($token, $title, $body)
 {
     try {
         $message = CloudMessage::withTarget('token', $token)
-            ->withNotification(Notification::create($title, $body));
+            ->withNotification(Notification::create($title, $body)) 
+            ->withData([
+                'type' => 'support'
+            ]);
 
         return [
             'success' => true,
