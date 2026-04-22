@@ -1,7 +1,6 @@
 <?php
 
 namespace App\Http\Controllers\SuperDoctor;
-
 use App\Http\Controllers\BaseController;
 use App\Http\Controllers\Controller;
 use App\Models\User;
