@@ -25,15 +25,8 @@ class PatientController extends BaseController
             return $this->sendError('Patient not found', [], 404);
         }
 
-        // $user->update([
-        //     'gender' => $request->gender,
-        //     'phone' => $request->phone,
-        //     'profile_image' => $request->profile_image,
-        // ]);
-
         if ($request->hasFile('profile_image')) {
 
-            // حذف الصورة القديمة
             if ($user->profile_image) {
                 Storage::disk('public')->delete($user->profile_image);
             }
