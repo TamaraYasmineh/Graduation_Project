@@ -62,4 +62,10 @@ class MedicalRecord extends Model
     {
         return $this->belongsTo(User::class, 'patient_id');
     }
+   
+
+    public function medicalTests()
+    {
+        return $this->hasMany(MedicalTest::class);
+    }
 }
