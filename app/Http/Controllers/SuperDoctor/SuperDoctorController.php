@@ -29,8 +29,8 @@ class SuperDoctorController extends Controller
 
     public function getDoctorsWithSpecialization(Request $request)
     {
-        $doctors = $this->doctorService->getAllDoctorsWithSpecialization($request->specialization);
-
+        $doctors = $this->doctorService->getAllDoctorsWithSpecialization($request->search);
+    
         return response()->json([
             'success' => true,
             'data' => SuperDoctorResource::collection($doctors)
