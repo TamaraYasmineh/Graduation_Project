@@ -143,7 +143,7 @@ class User extends Authenticatable
     }
     public function appointments()
     {
-        return $this->hasMany(Appointments::class, 'patient_id');
+        return $this->hasMany(Appointment::class, 'patient_id');
     }
     public function deviceTokens()
     {

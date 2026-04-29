@@ -35,4 +35,8 @@ class Secretary extends Model
     {
         return $this->belongsTo(User::class);
     }
+    public function medicalTests()
+    {
+        return $this->morphMany(MedicalTest::class, 'uploadable');
+    }
 }

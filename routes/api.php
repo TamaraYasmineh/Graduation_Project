@@ -4,6 +4,7 @@ use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Doctor\AppointmentController;
 use App\Http\Controllers\Doctor\BookingController;
 use App\Http\Controllers\FirebaseController;
+use App\Http\Controllers\MedicalTestController;
 use App\Http\Controllers\Patient\MedicalRecordController;
 use App\Http\Controllers\Patient\PatientController;
 use App\Http\Controllers\PaymentController;
@@ -13,6 +14,7 @@ use App\Http\Controllers\SuperDoctor\SuperDoctorController;
 use App\Models\DeviceToken;
 use App\Services\FirebaseService;
 use Illuminate\Support\Facades\Route;
+
 
 Route::post('/register', [AuthController::class, 'register']); //
 Route::post('/login', [AuthController::class, 'login']); //
@@ -77,8 +79,20 @@ Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor'])->gro
     Route::get('/doctor/getAllSchedulesFilterDay', [BookingController::class, 'getAllSchedulesFilterDay']);
     Route::post('/doctor/getAllSchedulesMonth', [BookingController::class, 'getAllSchedulesMonth']);
     Route::get('/doctor/getAllSchedulesWeek', [BookingController::class, 'getAllSchedulesWeek']);
+
+    Route::get('/getPatientMedicalTests/{id}', [MedicalTestController::class, 'getPatientMedicalTests']);
+//بيرجع التحاليل حسب السجل الطبي
+    Route::get('/getByRecord/{id}', [MedicalTestController::class, 'getByRecord']);
+
 });
 
+Route::middleware('auth:sanctum', 'approved', 'role:patient|secretary')->group(function () {
+
+    Route::post('/uploadMedicalTest', [MedicalTestController::class, 'uploadMedicalTest']);
+    Route::delete('/deleteMedicalTest/{id}', [MedicalTestController::class, 'deleteMedicalTest']);
+
+
+});
 
 Route::post('/pay', [PaymentController::class, 'create']);
 
