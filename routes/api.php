@@ -24,6 +24,7 @@ Route::post('/forgotPassword', [AuthController::class, 'forgotPassword']);
 Route::post('/resetPassword', [AuthController::class, 'resetPassword']);
 Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/patient/profile', [PatientController::class, 'updateProfile']); //
+    Route::post('/showProfile', [PatientController::class, 'showProfile']);
 });
 Route::middleware(['auth:sanctum', 'role:super_doctor|patient'])->group(function () {
     // Route::get('/getDoctors', [SuperDoctorController::class, 'getDoctors']);
@@ -59,6 +60,7 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
     Route::post('/rejectUser/{id}', [ApproveAndRejectController::class, 'rejectUser']); //
 
     Route::post('toggleDoctorRole/{id}', [SuperDoctorController::class, 'toggleDoctorRole']); //
+
 });
 
 
@@ -81,8 +83,11 @@ Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor'])->gro
     Route::get('/doctor/getAllSchedulesWeek', [BookingController::class, 'getAllSchedulesWeek']);
 
     Route::get('/getPatientMedicalTests/{id}', [MedicalTestController::class, 'getPatientMedicalTests']);
-//بيرجع التحاليل حسب السجل الطبي
+
     Route::get('/getByRecord/{id}', [MedicalTestController::class, 'getByRecord']);
+    Route::post('/getPatient', [PatientController::class, 'getPatient']);
+    
+
 
 });
 

@@ -1,7 +1,7 @@
 <?php
 
 namespace App\Models;
-
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -36,7 +36,10 @@ class Patient extends Model
         'city',
         'emergency_contact',
     ];
-
+    public function getAgeAttribute()
+    {
+     return Carbon::parse($this->date_of_birth)->age;
+    }
     public function user()
     {
         return $this->belongsTo(User::class);
