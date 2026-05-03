@@ -33,7 +33,7 @@ class BookingController extends BaseController
 
         $data = $request->validated();
         $data['doctor_id'] = $doctor->id;
-        $exists = Schedule::where('doctor_id', $doctor->id)
+        $exists = Schedule::query()->where('doctor_id', $doctor->id)
         ->where('date', $data['date'])
         ->where('start_time', $data['start_time'])
         ->where('end_time', $data['end_time'])
@@ -55,7 +55,7 @@ class BookingController extends BaseController
         $user = Auth::user();
         $doctor = $user->doctor;
 
-        $schedule = Schedule::where('id', $id)
+        $schedule = Schedule::query()->where('id', $id)
             ->where('doctor_id', $doctor->id)
             ->first();
 
@@ -101,7 +101,7 @@ class BookingController extends BaseController
         $doctorId = $user->doctor->id;
         $date = $request->date;
 
-        $schedule = Schedule::where('doctor_id', $doctorId)
+        $schedule = Schedule::query()->where('doctor_id', $doctorId)
             ->where('date', $date)
             ->first();
 
@@ -120,7 +120,7 @@ class BookingController extends BaseController
             $slotStart = $start->format('H:i');
             $slotEnd = $start->copy()->addMinutes($duration)->format('H:i');
 
-            $isBooked = Appointment::where('doctor_id', $doctorId)
+            $isBooked = Appointment::query()->where('doctor_id', $doctorId)
                 ->where('date', $date)
                 ->where('start_time', $slotStart)
                 ->exists();
@@ -147,7 +147,7 @@ class BookingController extends BaseController
 
         $doctorId = $user->doctor->id;
 
-        $schedules = Schedule::where('doctor_id', $doctorId)
+        $schedules = Schedule::query()->where('doctor_id', $doctorId)
             ->orderBy('date', 'asc')
             ->get();
 

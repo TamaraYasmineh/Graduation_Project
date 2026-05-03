@@ -16,18 +16,18 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \App\Models\Doctor $doctor
  * @property-read \App\Models\User $patient
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointments newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointments newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointments query()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointments whereCreatedAt($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointments whereDate($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointments whereDoctorId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointments whereEndTime($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointments whereId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointments wherePatientId($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointments whereStartTime($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointments whereStatus($value)
- * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointments whereUpdatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointment newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointment newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointment query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointment whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointment whereDate($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointment whereDoctorId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointment whereEndTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointment whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointment wherePatientId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointment whereStartTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointment whereStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointment whereUpdatedAt($value)
  * @mixin \Eloquent
  */
 class Appointment extends Model
