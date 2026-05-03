@@ -14,8 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $department
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Appointments> $appointments
- * @property-read int|null $appointments_count
+* @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Appointment> $appointments * @property-read int|null $appointments_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Schedule> $schedules
  * @property-read int|null $schedules_count
  * @property-read \App\Models\User $user

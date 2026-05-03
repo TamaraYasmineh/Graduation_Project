@@ -43,4 +43,5 @@ return [
         'password' => env('PAYMERA_PASSWORD'),
         'terminal_id' => env('PAYMERA_TERMINAL_ID'),
     ],
+    'payment_base_url' => env('PAYMENT_BASE_URL'),
 ];

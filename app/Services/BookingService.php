@@ -2,14 +2,14 @@
 namespace App\Services;
 
 use App\Models\Schedule;
-use App\Models\Appointments;
+use App\Models\Appointment;
 use Carbon\Carbon;
 
 class BookingService
 {
     public function getFirstAvailableSlot($doctorId)
     {
-        
+
         for ($i = 0; $i < 14; $i++) {
 
             $date = Carbon::today()->addDays($i);
@@ -20,7 +20,7 @@ class BookingService
                 ->first();
 
             if (!$schedule) {
-                continue; 
+                continue;
             }
 
             $start = Carbon::parse($schedule->start_time);
@@ -32,8 +32,8 @@ class BookingService
                 $slotStart = $start->format('H:i');
                 $slotEnd = $start->copy()->addMinutes($duration)->format('H:i');
 
-                $exists = Appointments::where('doctor_id', $doctorId)
-                    ->where('date', $date->toDateString()) 
+                $exists = Appointment::where('doctor_id', $doctorId)
+                    ->where('date', $date->toDateString())
                     ->where('start_time', $slotStart)
                     ->exists();
 
@@ -49,7 +49,7 @@ class BookingService
             }
         }
 
-        return null; 
+        return null;
     }
     public function book($user, $doctorId, $date, $startTime)
     {
@@ -57,47 +57,47 @@ class BookingService
         $schedule = Schedule::where('doctor_id', $doctorId)
             ->where('date', $date)
             ->first();
-    
+
         if (!$schedule) {
             return ['success' => false, 'message' => 'لا يوجد دوام'];
         }
-    
+
         $duration = $schedule->slot_duration;
-    
+
         // 🔥 احسب end_time من الباك
         $endTime = Carbon::parse($startTime)
             ->addMinutes($duration)
             ->format('H:i');
-    
+
         // ❗ تحقق إذا محجوز
-        $exists = Appointments::where('doctor_id', $doctorId)
+        $exists = Appointment::where('doctor_id', $doctorId)
             ->where('date', $date)
             ->where('start_time', $startTime)
             ->exists();
-    
+
         if ($exists) {
             return ['success' => false, 'message' => 'هذا الموعد تم حجزه'];
         }
-    
+
         // ❗ شرط: مرة بالشهر
-        $alreadyBooked = Appointments::where('patient_id', $user->id)
+        $alreadyBooked = Appointment::where('patient_id', $user->id)
             ->whereMonth('date', Carbon::parse($date)->month)
             ->exists();
-    
+
         if ($alreadyBooked) {
             return ['success' => false, 'message' => 'لديك حجز مسبق هذا الشهر'];
         }
-    
+
         // ✅ إنشاء الحجز
-        $appointment = Appointments::create([
+        $appointment = Appointment::create([
             'doctor_id' => $doctorId,
             'patient_id' => $user->id,
             'date' => $date,
             'start_time' => $startTime,
             'end_time' => $endTime,
-            'status' => 'confirmed'
+            'status' => 'pending'
         ]);
-    
+
         return [
             'success' => true,
             'data' => $appointment

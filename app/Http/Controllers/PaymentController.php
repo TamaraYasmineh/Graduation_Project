@@ -31,7 +31,7 @@ class PaymentController extends Controller
             'payment_id' => uniqid(),
             'amount' => $request->amount
         ]);
-        $base = "https://squshiest-mayme-preemotionally.ngrok-free.dev";
+        $base = config('services.payment_base_url');
         $orderId = $order->id;
 
         // إرسال Paymera
@@ -91,14 +91,51 @@ class PaymentController extends Controller
     // 2. Trigger (إشعار فقط)
     // =========================
 
-    public function trigger($orderId)
-    {
-        // تسجيل فقط
-        \Log::info("Trigger received for order: $orderId");
+    // public function trigger($orderId)
+    // {
+    //     // تسجيل فقط
+    //     \Log::info("Trigger received for order: $orderId");
 
-        return response()->json(['ok' => true]);
+    //     return response()->json(['ok' => true]);
+    // }
+public function trigger($orderId, PaymeraService $paymera)
+{
+    \Log::info("Trigger received for order: $orderId");
+
+    $order = Order::findOrFail($orderId);
+    $payment = $order->payment;
+
+    if (!$payment || !$payment->payment_id) {
+        return response()->json(['error' => 'Payment not found'], 404);
     }
 
+    $status = null;
+    $response = null;
+
+    for ($i = 0; $i < 5; $i++) {
+        $response = $paymera->getStatus($payment->payment_id);
+
+        if (!$response || !isset($response['ErrorCode'])) continue;
+        if ($response['ErrorCode'] != 0) continue;
+        if (!isset($response['Data']['status'])) continue;
+
+        $status = $response['Data']['status'];
+
+        if ($status != 'P') break;
+
+        sleep(2);
+    }
+
+    if ($status == 'A') {
+        $payment->markSuccess($response['Data']['rrn'] ?? null, $response);
+    } elseif ($status == 'F') {
+        $payment->markFailed($response);
+    } elseif ($status == 'C') {
+        $payment->markCanceled($response);
+    }
+
+    return response()->json(['ok' => true]);
+}
 
 
     // =========================
@@ -204,7 +241,7 @@ class PaymentController extends Controller
     // =========================
     public function cancel($paymentId, PaymeraService $paymera)
     {
-        $payment = Payment::where('payment_id', $paymentId)->firstOrFail();
+        $payment = Payment::query()->where('payment_id', $paymentId)->firstOrFail();
 
         $response = $paymera->cancel($paymentId);
         if ($response['ErrorCode'] == 0) {
