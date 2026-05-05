@@ -86,7 +86,7 @@ Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor'])->gro
 
     Route::get('/getByRecord/{id}', [MedicalTestController::class, 'getByRecord']);
     Route::post('/getPatient', [PatientController::class, 'getPatient']);
-    
+
 
 
 });
@@ -108,3 +108,4 @@ Route::get('/payment/trigger/{order}', [PaymentController::class, 'trigger'])
     ->name('payment.trigger');
 
 Route::post('/payment/cancel/{paymentId}', [PaymentController::class, 'cancel']);
+    Route::get('/payment/dashboard', [PaymentController::class, 'dashboard']);
