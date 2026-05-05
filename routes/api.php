@@ -60,9 +60,10 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
     Route::post('/rejectUser/{id}', [ApproveAndRejectController::class, 'rejectUser']); //
 
     Route::post('toggleDoctorRole/{id}', [SuperDoctorController::class, 'toggleDoctorRole']); //
-    
+
 
     Route::get('/payment/dashboard', [PaymentController::class, 'dashboard']);
+    Route::get('/PaymentStatistics', [PaymentController::class, 'PaymentStatistics']);
 
 });
 
