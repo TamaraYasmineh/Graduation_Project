@@ -60,7 +60,7 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
     Route::post('/rejectUser/{id}', [ApproveAndRejectController::class, 'rejectUser']); //
 
     Route::post('toggleDoctorRole/{id}', [SuperDoctorController::class, 'toggleDoctorRole']); //
-
+    Route::get('/payment/dashboard', [PaymentController::class, 'dashboard']);
 });
 
 
@@ -68,6 +68,8 @@ Route::middleware(['auth:sanctum', 'role:patient'])->group(function () {
     Route::post('/book-appointment', [MedicalRecordController::class, 'bookAppointment']); //
     Route::post('/getAvailableAppointments', [AppointmentController::class, 'getAvailableAppointments']); //
     Route::get('/myAppointments', [MedicalRecordController::class, 'myAppointments']);
+    Route::get('/payment/status/{paymentId}', [PaymentController::class, 'getPaymentStatus']);
+
 });
 
 Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor'])->group(function () {
@@ -108,4 +110,3 @@ Route::get('/payment/trigger/{order}', [PaymentController::class, 'trigger'])
     ->name('payment.trigger');
 
 Route::post('/payment/cancel/{paymentId}', [PaymentController::class, 'cancel']);
-    Route::get('/payment/dashboard', [PaymentController::class, 'dashboard']);

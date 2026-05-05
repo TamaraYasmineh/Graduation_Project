@@ -260,4 +260,28 @@ class PaymentController extends BaseController
             'url' => 'https://fmp-t.paymera.cc'
         ], 'Paymera Dashboard');
     }
+
+    // =========================
+    // 6. Get Payment Status
+    // =========================
+    public function getPaymentStatus($paymentId, PaymeraService $paymera)
+    {
+        $payment = Payment::query()->where('payment_id', $paymentId)->first();
+
+        $response = $paymera->getStatus($paymentId);
+
+        if (!$response || !isset($response['ErrorCode'])) {
+            return $this->sendError('لا يوجد رد من بيميرا', [], 500);
+        }
+
+        if ($response['ErrorCode'] != 0) {
+            return $this->sendError($response['ErrorMessage'] ?? 'خطأ في الدفع', [], 400);
+        }
+
+        return $this->sendResponse([
+            'status'    => $response['Data']['status'],
+            'amount'    => $response['Data']['amount'],
+            'paid_at' => $payment?->paid_at,
+        ], 'Payment Status');
+    }
 }
