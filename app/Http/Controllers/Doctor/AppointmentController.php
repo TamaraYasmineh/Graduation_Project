@@ -79,6 +79,34 @@ return response()->json([
             'Available appointments fetched successfully'
         );
     }
+    public function getGroupedAppointments($doctor_id)
+    {
+        $appointments = Appointment::where('doctor_id', $doctor_id)
+            ->orderByRaw("FIELD(status, 'pending', 'confirmed', 'completed', 'cancelled')")
+            ->orderBy('date')
+            ->get()
+            ->groupBy('status');
+    
+        return $this->sendResponse($appointments, 'Doctor appointments grouped');
+    }
+public function updateStatus(Request $request, $id)
+{
+    $request->validate([
+        'status' => 'required|in:pending,confirmed,cancelled,completed'
+    ]);
+
+    $appointment = Appointment::find($id);
+
+    if (!$appointment) {
+        return $this->sendError('Appointment not found', [], 404);
+    }
+
+    $appointment->update([
+        'status' => $request->status
+    ]);
+
+    return $this->sendResponse($appointment, 'Status updated successfully');
+}
     }
 
 

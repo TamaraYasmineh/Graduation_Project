@@ -26,7 +26,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/patient/profile', [PatientController::class, 'updateProfile']); //
     Route::post('/showProfile', [PatientController::class, 'showProfile']);
 });
-Route::middleware(['auth:sanctum', 'role:super_doctor|patient'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:super_doctor|patient|secretary'])->group(function () {
     // Route::get('/getDoctors', [SuperDoctorController::class, 'getDoctors']);
 
     Route::get('/getDoctorsWithSpecialization', [SuperDoctorController::class, 'getDoctorsWithSpecialization']); //
@@ -60,6 +60,7 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
     Route::post('/rejectUser/{id}', [ApproveAndRejectController::class, 'rejectUser']); //
 
     Route::post('toggleDoctorRole/{id}', [SuperDoctorController::class, 'toggleDoctorRole']); //
+    
 
 });
 
@@ -98,7 +99,10 @@ Route::middleware('auth:sanctum', 'approved', 'role:patient|secretary')->group(f
 
 
 });
-
+Route::middleware('auth:sanctum', 'approved','role:secretary')->group(function () {
+    Route::get('/appointments/grouped/{id}', [AppointmentController::class, 'getGroupedAppointments']);
+    Route::post('/appointments/{id}/status', [AppointmentController::class, 'updateStatus']);
+});
 Route::post('/pay', [PaymentController::class, 'create']);
 
 Route::get('/payment/callback/{order}', [PaymentController::class, 'callback'])
