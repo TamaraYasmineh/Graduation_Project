@@ -257,7 +257,7 @@ class PaymentController extends BaseController
     public function dashboard()
     {
         return $this->sendResponse([
-            'url' => 'https://fmp-t.paymera.cc'
+            'url' => 'https://fmp-t.paymera.cc/app/admin/transactions'
         ], 'Paymera Dashboard');
     }
 
