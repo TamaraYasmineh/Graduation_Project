@@ -81,12 +81,12 @@ return response()->json([
     }
     public function getGroupedAppointments($doctor_id)
     {
-        $appointments = Appointment::where('doctor_id', $doctor_id)
+        $appointments = Appointment::query()->where('doctor_id', $doctor_id)
             ->orderByRaw("FIELD(status, 'pending', 'confirmed', 'completed', 'cancelled')")
             ->orderBy('date')
             ->get()
             ->groupBy('status');
-    
+
         return $this->sendResponse($appointments, 'Doctor appointments grouped');
     }
 public function updateStatus(Request $request, $id)
