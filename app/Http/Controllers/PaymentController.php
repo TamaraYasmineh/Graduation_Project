@@ -277,7 +277,9 @@ class PaymentController extends BaseController
         if ($response['ErrorCode'] != 0) {
             return $this->sendError($response['ErrorMessage'] ?? 'خطأ في الدفع', [], 400);
         }
-
+        if (!isset($response['Data'])) {
+            return $this->sendError('Missing Data in response', [], 500);
+        }
         return $this->sendResponse([
             'status'    => $response['Data']['status'],
             'amount'    => $response['Data']['amount'],
@@ -287,35 +289,35 @@ class PaymentController extends BaseController
 
 
     public function PaymentStatistics()
-{
-    $accepted = Payment::query()->where('status', 'A')->count();
-    $failed   = Payment::query()->where('status', 'F')->count();
-    $canceled = Payment::query()->where('status', 'C')->count();
-    $pending  = Payment::query()->where('status', 'P')->count();
+    {
+        $accepted = Payment::query()->where('status', 'A')->count();
+        $failed   = Payment::query()->where('status', 'F')->count();
+        $canceled = Payment::query()->where('status', 'C')->count();
+        $pending  = Payment::query()->where('status', 'P')->count();
 
-    $totalAmountAccepted  = Payment::query()->where('status', 'A')->sum('amount');
-    $totalAmountFailed    = Payment::query()->where('status', 'F')->sum('amount');
-    $totalAmountCanceled  = Payment::query()->where('status', 'C')->sum('amount');
-    $totalAmountPending   = Payment::query()->where('status', 'P')->sum('amount');
+        $totalAmountAccepted  = Payment::query()->where('status', 'A')->sum('amount');
+        $totalAmountFailed    = Payment::query()->where('status', 'F')->sum('amount');
+        $totalAmountCanceled  = Payment::query()->where('status', 'C')->sum('amount');
+        $totalAmountPending   = Payment::query()->where('status', 'P')->sum('amount');
 
-    return $this->sendResponse([
-        'accepted' => [
-            'count'  => $accepted,
-            'amount' => $totalAmountAccepted,
-        ],
-        'failed' => [
-            'count'  => $failed,
-            'amount' => $totalAmountFailed,
-        ],
-        'canceled' => [
-            'count'  => $canceled,
-            'amount' => $totalAmountCanceled,
-        ],
-        'pending' => [
-            'count'  => $pending,
-            'amount' => $totalAmountPending,
-        ],
-        'total_amount' => $totalAmountAccepted, // إجمالي المبالغ المقبولة فقط
-    ], 'Payment Statistics');
-}
+        return $this->sendResponse([
+            'accepted' => [
+                'count'  => $accepted,
+                'amount' => $totalAmountAccepted,
+            ],
+            'failed' => [
+                'count'  => $failed,
+                'amount' => $totalAmountFailed,
+            ],
+            'canceled' => [
+                'count'  => $canceled,
+                'amount' => $totalAmountCanceled,
+            ],
+            'pending' => [
+                'count'  => $pending,
+                'amount' => $totalAmountPending,
+            ],
+            'total_amount' => $totalAmountAccepted, // إجمالي المبالغ المقبولة فقط
+        ], 'Payment Statistics');
+    }
 }

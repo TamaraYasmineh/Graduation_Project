@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $department
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
-* @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Appointment> $appointments * @property-read int|null $appointments_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Appointment> $appointments * @property-read int|null $appointments_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Schedule> $schedules
  * @property-read int|null $schedules_count
  * @property-read \App\Models\User $user
@@ -49,12 +49,21 @@ class Doctor extends Model
     }
     public function appointments()
     {
-    return $this->hasMany(Appointment::class);
+        return $this->hasMany(Appointment::class);
     }
 
-   public function schedules()
-   {
-    return $this->hasMany(Schedule::class)
-        ->whereRaw("TIMESTAMP(date, end_time) > NOW()");
-   }
+    public function schedules()
+    {
+        return $this->hasMany(Schedule::class)
+            ->whereRaw("TIMESTAMP(date, end_time) > NOW()");
+    }
+    public function reviews()
+    {
+        return $this->hasMany(DoctorReview::class);
+    }
+
+    public function calculateAverageRating()
+    {
+        return round($this->reviews()->avg('rating'), 1);
+    }
 }
