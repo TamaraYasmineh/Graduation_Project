@@ -7,7 +7,7 @@ use App\Models\Payment;
 use App\Services\PaymeraService;
 use Illuminate\Http\Request;
 
-class PaymentController extends Controller
+class PaymentController extends BaseController
 {
     // =========================
     // 1. Create Payment
@@ -98,44 +98,44 @@ class PaymentController extends Controller
 
     //     return response()->json(['ok' => true]);
     // }
-public function trigger($orderId, PaymeraService $paymera)
-{
-    \Log::info("Trigger received for order: $orderId");
+    public function trigger($orderId, PaymeraService $paymera)
+    {
+        \Log::info("Trigger received for order: $orderId");
 
-    $order = Order::findOrFail($orderId);
-    $payment = $order->payment;
+        $order = Order::findOrFail($orderId);
+        $payment = $order->payment;
 
-    if (!$payment || !$payment->payment_id) {
-        return response()->json(['error' => 'Payment not found'], 404);
+        if (!$payment || !$payment->payment_id) {
+            return response()->json(['error' => 'Payment not found'], 404);
+        }
+
+        $status = null;
+        $response = null;
+
+        for ($i = 0; $i < 5; $i++) {
+            $response = $paymera->getStatus($payment->payment_id);
+
+            if (!$response || !isset($response['ErrorCode'])) continue;
+            if ($response['ErrorCode'] != 0) continue;
+            if (!isset($response['Data']['status'])) continue;
+
+            $status = $response['Data']['status'];
+
+            if ($status != 'P') break;
+
+            sleep(2);
+        }
+
+        if ($status == 'A') {
+            $payment->markSuccess($response['Data']['rrn'] ?? null, $response);
+        } elseif ($status == 'F') {
+            $payment->markFailed($response);
+        } elseif ($status == 'C') {
+            $payment->markCanceled($response);
+        }
+
+        return response()->json(['ok' => true]);
     }
-
-    $status = null;
-    $response = null;
-
-    for ($i = 0; $i < 5; $i++) {
-        $response = $paymera->getStatus($payment->payment_id);
-
-        if (!$response || !isset($response['ErrorCode'])) continue;
-        if ($response['ErrorCode'] != 0) continue;
-        if (!isset($response['Data']['status'])) continue;
-
-        $status = $response['Data']['status'];
-
-        if ($status != 'P') break;
-
-        sleep(2);
-    }
-
-    if ($status == 'A') {
-        $payment->markSuccess($response['Data']['rrn'] ?? null, $response);
-    } elseif ($status == 'F') {
-        $payment->markFailed($response);
-    } elseif ($status == 'C') {
-        $payment->markCanceled($response);
-    }
-
-    return response()->json(['ok' => true]);
-}
 
 
     // =========================
@@ -249,5 +249,39 @@ public function trigger($orderId, PaymeraService $paymera)
         }
 
         return response()->json($response);
+    }
+
+    // =========================
+    // 5. Paymera Dashboard
+    // =========================
+    public function dashboard()
+    {
+        return $this->sendResponse([
+            'url' => 'https://fmp-t.paymera.cc/app/admin/transactions'
+        ], 'Paymera Dashboard');
+    }
+
+    // =========================
+    // 6. Get Payment Status
+    // =========================
+    public function getPaymentStatus($paymentId, PaymeraService $paymera)
+    {
+        $payment = Payment::query()->where('payment_id', $paymentId)->first();
+
+        $response = $paymera->getStatus($paymentId);
+
+        if (!$response || !isset($response['ErrorCode'])) {
+            return $this->sendError('لا يوجد رد من بيميرا', [], 500);
+        }
+
+        if ($response['ErrorCode'] != 0) {
+            return $this->sendError($response['ErrorMessage'] ?? 'خطأ في الدفع', [], 400);
+        }
+
+        return $this->sendResponse([
+            'status'    => $response['Data']['status'],
+            'amount'    => $response['Data']['amount'],
+            'paid_at' => $payment?->paid_at,
+        ], 'Payment Status');
     }
 }
