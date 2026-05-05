@@ -16,15 +16,9 @@ class PatientController extends BaseController
     {
         $user = $request->user();
 
-        if (!$user /*|| !$user->hasRole('patient')*/) {
+        if (!$user ) {
             return $this->sendError('Unauthorized', [], 403);
         }
-
-        // $patient = $user->patient;
-        // if (!$patient) {
-        //     return $this->sendError('Patient not found', [], 404);
-        // }
-
         if ($request->hasFile('profile_image')) {
 
             if ($user->profile_image) {
@@ -40,13 +34,6 @@ class PatientController extends BaseController
             'phone' => $request->phone ?? $user->phone,
             'profile_image' => $path,
         ]);
-
-       /* $patient->update($request->only([
-            'date_of_birth',
-            'country',
-            'city',
-            'emergency_contact',
-        ]));*/
         if ($user->hasRole('patient')) {
             $user->patient?->update($request->only([
                 'date_of_birth',
@@ -76,25 +63,7 @@ class PatientController extends BaseController
             'Profile updated successfully'
         );
     }
-   /* public function showProfile(Request $request)
-   {
-    $user = $request->user();
-
-    if (!$user) {
-        return $this->sendError('Unauthorized', [], 403);
-    }
-
-    $user->load([
-        'patient',
-        'medicalRecord',
-        'appointments.doctor.user'
-    ]);
-
-    return $this->sendResponse(
-        new UserResource($user),
-        'Profile fetched successfully'
-    );
-   }*/
+  
    public function showProfile(Request $request)
    {
        $user = $request->user();
