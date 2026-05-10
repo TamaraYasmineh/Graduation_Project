@@ -38,7 +38,6 @@ class MedicalRecordController extends BaseController
 
             $superDoctorUser = User::role('super_doctor')->first();
 
-            // $doctor = Doctor::where('user_id',$superDoctorUser->id)->first();
             $doctor = Doctor::query()->where('user_id', $superDoctorUser->id)->first();
             $slot = $bookingService->getFirstAvailableSlot($doctor->id);
 
@@ -50,6 +49,9 @@ class MedicalRecordController extends BaseController
                 'patient_id' => $user->id,
                 ...$request->validated()
             ]);
+
+            //  توليد وحفظ QR Code فور إنشاء السجل
+            $record->generateAndSaveQrCode();
 
             $appointment = Appointment::create([
                 'doctor_id' => $doctor->id,
@@ -96,6 +98,7 @@ class MedicalRecordController extends BaseController
 
             return $this->sendResponse([
                 'medical_record' => $record,
+                'qr_code_url'    => $record->getQrCodeUrl(),
                 'appointment' => $appointment,
                 'payment_url' => $response['Data']['url'],
                 'payment_id' => $payment->payment_id
@@ -167,5 +170,171 @@ class MedicalRecordController extends BaseController
             ->get();
 
         return $this->sendResponse($appointments, 'My appointments');
+    }
+
+    /**
+     * جلب السجل الطبي مع رابط QR Code
+     * GET /api/patient/medical-record/qr
+     */
+    public function showWithQr(Request $request)
+    {
+        $user = $request->user();
+
+        $record = MedicalRecord::query()->where('patient_id', $user->id)
+            ->with(['patient.patient'])
+            ->first();
+
+        if (!$record) {
+            return $this->sendError('لا يوجد سجل طبي لهذا المريض', [], 404);
+        }
+
+        $appUrl  = rtrim(config('services.public_url'), '/');
+        $token   = urlencode($record->getScanToken());
+
+        return $this->sendResponse([
+            'medical_record' => [
+                'id'                 => $record->id,
+                'patient_name'       => $record->patient->name ?? '',
+                'blood_type'         => $record->blood_type,
+                'blood_pressure'     => $record->blood_pressure,
+                'height'             => $record->height,
+                'weight'             => $record->weight,
+                'is_smoker'          => $record->is_smoker ? 'نعم' : 'لا',
+                'chronic_diseases'   => $record->chronic_diseases,
+                'allergies'          => $record->allergies,
+                'medications'        => $record->medications,
+                'surgeries'          => $record->surgeries,
+                'family_history'     => $record->family_history,
+                'marital_status'     => $record->marital_status,
+                'number_of_children' => $record->number_of_children,
+                'notes'              => $record->notes,
+                'email' => $record->patient->email ?? '',
+                'phone' => $record->patient->phone ?? '',
+                'gender' => $record->patient->gender ?? '',
+
+                'profile_image' => $record->patient->profile_image
+                    ? asset('storage/' . $record->patient->profile_image)
+                    : null,
+                'date_of_birth' =>
+                optional($record->patient->patient)->date_of_birth,
+
+                'age' =>
+                optional($record->patient->patient)->date_of_birth
+                    ? Carbon::parse(
+                        $record->patient->patient->date_of_birth
+                    )->age
+                    : null,
+
+                'country' =>
+                optional($record->patient->patient)->country,
+
+                'city' =>
+                optional($record->patient->patient)->city,
+
+                'address' =>
+                optional($record->patient->patient)->country .
+                    ' - ' .
+                    optional($record->patient->patient)->city,
+
+                'emergency_contact' =>
+                optional($record->patient->patient)->emergency_contact,
+
+            ],
+            'qr_code_url' => $record->getQrCodeUrl(),
+            'scan_url'    => $appUrl . '/scan?token=' . $token,
+        ], 'تم جلب السجل الطبي مع QR Code');
+    }
+
+    /**
+     * عند السكان الحقيقي بالهاتف
+     * GET /api/medical-records/scan?token=XXXXX
+     * ← هذا الرابط يُفتح تلقائياً عند مسح QR بالهاتف
+     */
+    public function scan(Request $request)
+    {
+        try {
+            $decrypted = decrypt($request->token);
+            [$patientId, $recordId] = explode('|', $decrypted);
+
+            $record = MedicalRecord::query()->where('id', $recordId)
+                ->where('patient_id', $patientId)
+                ->with(['patient.patient'])
+                ->first();
+
+            if (!$record) {
+                return $this->sendError('السجل الطبي غير موجود', [], 404);
+            }
+
+            return $this->sendResponse([
+                'patient_name'       => $record->patient->name ?? '',
+                'blood_type'         => $record->blood_type,
+                'blood_pressure'     => $record->blood_pressure,
+                'height'             => $record->height . ' سم',
+                'weight'             => $record->weight . ' كغ',
+                'is_smoker'          => $record->is_smoker ? 'نعم' : 'لا',
+                'chronic_diseases'   => $record->chronic_diseases,
+                'allergies'          => $record->allergies,
+                'medications'        => $record->medications,
+                'surgeries'          => $record->surgeries,
+                'family_history'     => $record->family_history,
+                'marital_status'     => $record->marital_status,
+                'number_of_children' => $record->number_of_children,
+                'notes'              => $record->notes,
+                   'email' => $record->patient->email ?? '',
+                'phone' => $record->patient->phone ?? '',
+                'gender' => $record->patient->gender ?? '',
+
+                'profile_image' => $record->patient->profile_image
+                    ? asset('storage/' . $record->patient->profile_image)
+                    : null,
+                'date_of_birth' =>
+                optional($record->patient->patient)->date_of_birth,
+
+                'age' =>
+                optional($record->patient->patient)->date_of_birth
+                    ? Carbon::parse(
+                        $record->patient->patient->date_of_birth
+                    )->age
+                    : null,
+
+                'country' =>
+                optional($record->patient->patient)->country,
+
+                'city' =>
+                optional($record->patient->patient)->city,
+
+                'address' =>
+                optional($record->patient->patient)->country .
+                    ' - ' .
+                    optional($record->patient->patient)->city,
+
+                'emergency_contact' =>
+                optional($record->patient->patient)->emergency_contact,
+
+            ], 'بيانات السجل الطبي');
+        } catch (\Exception $e) {
+            return $this->sendError('QR Code غير صالح أو تالف', [], 400);
+        }
+    }
+
+    /**
+     * صفحة HTML جميلة تظهر عند السكان بالهاتف
+     * GET /scan?token=XXXXX  (web route)
+     */
+    public function scanWeb(Request $request)
+    {
+        try {
+            $decrypted = decrypt($request->token);
+            [$patientId, $recordId] = explode('|', $decrypted);
+
+            $record = MedicalRecord::query()->where('id', $recordId)
+                ->where('patient_id', $patientId)
+                ->with(['patient.patient'])
+                ->firstOrFail();
+
+            return view('medical-records.scan-result', compact('record'));
+        } catch (\Exception $e) {
+            abort(400, 'QR Code غير صالح');
+        }
     }
 }
