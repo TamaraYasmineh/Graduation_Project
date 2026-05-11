@@ -38,7 +38,6 @@ class MedicalRecordController extends BaseController
 
             $superDoctorUser = User::role('super_doctor')->first();
 
-            // $doctor = Doctor::where('user_id',$superDoctorUser->id)->first();
             $doctor = Doctor::query()->where('user_id', $superDoctorUser->id)->first();
             $slot = $bookingService->getFirstAvailableSlot($doctor->id);
 
@@ -50,6 +49,9 @@ class MedicalRecordController extends BaseController
                 'patient_id' => $user->id,
                 ...$request->validated()
             ]);
+
+            //  توليد وحفظ QR Code فور إنشاء السجل
+            $record->generateAndSaveQrCode();
 
             $appointment = Appointment::create([
                 'doctor_id' => $doctor->id,
@@ -96,6 +98,7 @@ class MedicalRecordController extends BaseController
 
             return $this->sendResponse([
                 'medical_record' => $record,
+                'qr_code_url'    => $record->getQrCodeUrl(),
                 'appointment' => $appointment,
                 'payment_url' => $response['Data']['url'],
                 'payment_id' => $payment->payment_id
