@@ -20,6 +20,8 @@ class MedicalRecordResource extends JsonResource
             'allergies' => $this->allergies,
             'medications' => $this->medications,
             'is_smoker' => $this->is_smoker,
+            'marital_status'=>$this->marital_status,
+            'number_of_children'=>$this->number_of_children,
             'height' => $this->height,
             'weight' => $this->weight,
         ];

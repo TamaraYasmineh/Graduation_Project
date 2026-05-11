@@ -24,7 +24,8 @@ Route::post('/verify-otp', [AuthController::class, 'verifyOtp']); //
 Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
 Route::post('/forgotPassword', [AuthController::class, 'forgotPassword']);
 Route::post('/resetPassword', [AuthController::class, 'resetPassword']);
-
+Route::get('medical-records/scan', [MedicalRecordController::class, 'scan'])
+     ->name('medical-records.scan');
 //Auth
 Route::middleware(['auth:sanctum'])->group(function () {
 
@@ -86,7 +87,9 @@ Route::middleware(['auth:sanctum', 'role:patient'])->group(function () {
     Route::get('/payment/status/{paymentId}', [PaymentController::class, 'getPaymentStatus']); //
 
     Route::post('/addReview', [DoctorReviewController::class, 'addReview']);
-});
+    Route::get('medical-record/qr', [MedicalRecordController::class, 'showWithQr'])
+         ->name('medical-records.show-qr');
+    });
 
 //patient|super_doctor
 Route::middleware(['auth:sanctum', 'role:patient|super_doctor'])->group(function () {

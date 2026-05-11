@@ -27,6 +27,8 @@ class StoreMedicalRecordRequest extends FormRequest
             'allergies' => 'nullable|string',
             'medications' => 'nullable|string',
             'notes' => 'nullable|string',
+            'marital_status' => 'nullable|string',
+            'number_of_children' => 'nullable|integer',
             'is_smoker' => 'nullable|boolean',
             'height' => 'nullable|numeric',
             'weight' => 'nullable|numeric',
