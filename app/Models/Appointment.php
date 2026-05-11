@@ -51,4 +51,8 @@ class Appointment extends Model
     {
         return $this->belongsTo(User::class, 'patient_id');
     }
+    public function order()
+{
+    return $this->hasOne(Order::class, 'appointment_id');
+}
 }

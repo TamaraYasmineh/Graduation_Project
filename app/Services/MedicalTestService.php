@@ -8,50 +8,69 @@ use Illuminate\Support\Facades\Storage;
 
 class MedicalTestService
 {
-    public function upload($request)
-    {
-       $user = Auth::user();
-        $file = $request->file('file');
+//     public function upload($request)
+//     {
+//        $user = Auth::user();
+//         $file = $request->file('file');
 
-        // تحديد النوع
-        $ext = $file->extension();
+//         // تحديد النوع
+//         $ext = $file->extension();
 
-        $type = match ($ext) {
-            'jpg', 'jpeg', 'png' => 'image',
-            'pdf' => 'pdf',
-            default => 'doc',
-        };
+//         $type = match ($ext) {
+//             'jpg', 'jpeg', 'png' => 'image',
+//             'pdf' => 'pdf',
+//             default => 'doc',
+//         };
 
-        // تخزين الملف
-        $path = $file->store('medical_tests', 'public');
+//         // تخزين الملف
+//         $path = $file->store('medical_tests', 'public');
+//         $test = new MedicalTest([
+//     'medical_record_id' => $request->medical_record_id,
+//     'file_path' => $path,
+//     'file_type' => $type,
+//     'test_type' => $request->test_type,
+//     'notes' => $request->notes,
+// ]);
 
-        // $test = MedicalTest::create([
-        //     'medical_record_id' => $request->medical_record_id,
-        //     'file_path' => $path,
-        //     'file_type' => $type,
-        //     'test_type' => $request->test_type,
-        //     'notes' => $request->notes,
-        // ]);
+// $test->uploadable()->associate($user);
 
-        // // ربط الرافع
-        // $test->uploadable()->associate($user);
-        // $test->save();
-        $test = new MedicalTest([
-    'medical_record_id' => $request->medical_record_id,
-    'file_path' => $path,
-    'file_type' => $type,
-    'test_type' => $request->test_type,
-    'notes' => $request->notes,
-]);
+// $test->save();
 
-$test->uploadable()->associate($user);
+//         return $test;
 
-$test->save();
+//     }
+public function upload($request)
+{
+    $user = Auth::user();
 
-        return $test;
-
+    if (!$user->medicalRecord) {
+        throw new \Exception('لا يوجد سجل طبي لهذا المستخدم');
     }
 
+    $file = $request->file('file');
+
+    $ext = $file->extension();
+
+    $type = match ($ext) {
+        'jpg', 'jpeg', 'png' => 'image',
+        'pdf' => 'pdf',
+        default => 'doc',
+    };
+
+    $path = $file->store('medical_tests', 'public');
+
+    $test = MedicalTest::create([
+        'medical_record_id' => $user->medicalRecord->id,
+        'uploadable_id' => $user->id,
+        'uploadable_type' => \App\Models\User::class,
+        'file_path' => $path,
+        'file_type' => $type,
+        'test_type' => $request->test_type,
+        'notes' => $request->notes,
+    ]);
+
+    return $test;
+}
     public function getPatientTests($patientId)
     {
          return MedicalTest::with('uploadable')

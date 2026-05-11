@@ -24,6 +24,8 @@ class UserResource extends JsonResource
     ? asset('storage/' . $this->profile_image) 
     : null,
            'patient' => PatientResource::make($this->whenLoaded('patient')),
+           'doctor' => $this->whenLoaded('doctor'),
+           'secretary' => $this->whenLoaded('secretary'),
         ];
     }
 }

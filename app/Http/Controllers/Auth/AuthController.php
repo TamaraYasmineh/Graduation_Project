@@ -15,6 +15,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use App\Models\DeviceToken;
 use App\Services\FirebaseService;
+use Illuminate\Support\Str;
+use App\Models\Patient;
 class AuthController extends BaseController
 
 {
@@ -194,5 +196,47 @@ class AuthController extends BaseController
         'user_id' => $user->id,
         'token' => $token
       ]);
+    }
+    public function createPatientBySecretary(Request $request)
+    {
+        $actor = $request->user();
+        if (!$actor->hasRole('secretary')) {
+            return $this->sendError('Unauthorized', [], 403);
+        }
+        $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'nullable|email|unique:users,email',
+            'phone' => 'required|string|max:20|unique:users,phone',
+            'gender' => 'nullable|in:male,female',
+            'date_of_birth' => 'nullable|date',
+            'country' => 'nullable|string',
+            'city' => 'nullable|string',
+            'emergency_contact' => 'nullable|string',
+        ]);
+        $plainPassword = Str::random(8);
+        $user = User::create([
+            'name' => $request->name,
+            'email' => $request->email,
+            'phone' => $request->phone,
+            'gender' => $request->gender,
+            'password' => Hash::make($plainPassword),
+            'status' => User::STATUS_APPROVED
+        ]);
+        $user->assignRole('patient');
+        $patient = Patient::create([
+            'user_id' => $user->id,
+            'date_of_birth' => $request->date_of_birth,
+            'country' => $request->country,
+            'city' => $request->city,
+            'emergency_contact' => $request->emergency_contact,
+        ]);
+        $token = $user->createToken('patient_token')->plainTextToken;
+    
+        return $this->sendResponse([
+            'user' => new UserResource($user),
+            'patient' => $patient,
+            'token' => $token,
+            'generated_password' => $plainPassword
+        ], 'Patient created successfully');
     }
 }

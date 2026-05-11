@@ -6,8 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 
 class MedicalTest extends Model
 {
-  protected $fillable = [
+    protected $fillable = [
         'medical_record_id',
+        'uploadable_id',        
+        'uploadable_type',      
         'file_path',
         'file_type',
         'test_type',

@@ -24,6 +24,8 @@ class UpdatePatientProfileRequest extends FormRequest
         public function rules(): array
         {
             return [
+                'name' => 'sometimes|string|max:255',
+                'email' => 'sometimes|email|unique:users,email,' . $this->user()->id,
                 'gender' => 'sometimes|in:male,female',
                 'phone' => 'sometimes|string|max:20',
                 'profile_image' => 'sometimes|image|mimes:jpg,jpeg,png|max:2048',

@@ -30,6 +30,8 @@ class PatientController extends BaseController
         }
 
         $user->update([
+            'name' => $request->name ?? $user->name,
+            'email' => $request->email ?? $user->email,
             'gender' => $request->gender ?? $user->gender,
             'phone' => $request->phone ?? $user->phone,
             'profile_image' => $path,
@@ -119,4 +121,28 @@ class PatientController extends BaseController
         );
     
     }
+    public function showPatient($id)
+{
+    $patient = User::role('patient')
+        ->with([
+            'patient',
+            'medicalRecord',
+            'appointments.doctor.user',
+            'appointments.order.payment'
+        ])
+        ->find($id);
+
+    if (!$patient) {
+        return $this->sendError(
+            'Patient not found',
+            [],
+            404
+        );
+    }
+
+    return $this->sendResponse(
+        new InforPatientResource($patient),
+        'Patient retrieved successfully'
+    );
+}
 }
