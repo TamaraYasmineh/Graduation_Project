@@ -160,17 +160,42 @@ class MedicalRecordController extends BaseController
             'payment_id' => $payment->payment_id
         ], 'تم الحجز، يرجى إتمام الدفع');
     }
+    // public function myAppointments(Request $request)
+    // {
+    //     $user = $request->user();
+
+    //     $appointments = Appointment::with(['doctor.user'])
+    //         ->where('patient_id', $user->id)
+    //         ->orderBy('date', 'desc')
+    //         ->get();
+
+    //     return $this->sendResponse($appointments, 'My appointments');
+    // }
     public function myAppointments(Request $request)
-    {
-        $user = $request->user();
+{
+    $user = $request->user();
 
-        $appointments = Appointment::with(['doctor.user'])
-            ->where('patient_id', $user->id)
-            ->orderBy('date', 'desc')
-            ->get();
+    $appointments = Appointment::with(['doctor.user', 'order.payment'])
+        ->where('patient_id', $user->id)
+        ->orderBy('date', 'desc')
+        ->get();
 
-        return $this->sendResponse($appointments, 'My appointments');
-    }
+
+    $appointments->map(function ($appointment) {
+
+        $appointment->payment_id =
+            $appointment->order?->payment?->payment_id;
+
+        return $appointment;
+    });
+
+    return $this->sendResponse(
+        $appointments,
+        'My appointments'
+    );
+}
+
+
 
     /**
      * جلب السجل الطبي مع رابط QR Code
@@ -337,4 +362,5 @@ class MedicalRecordController extends BaseController
             abort(400, 'QR Code غير صالح');
         }
     }
+
 }

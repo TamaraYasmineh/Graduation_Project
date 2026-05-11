@@ -116,6 +116,8 @@ Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor'])->gro
 
     Route::get('/getByRecord/{id}', [MedicalTestController::class, 'getByRecord']);
     Route::post('/getPatient', [PatientController::class, 'getPatient']);
+    Route::get('/patients/{id}',[PatientController::class, 'showPatient']
+    );
 });
 
 //patient|secretary
@@ -130,6 +132,7 @@ Route::middleware('auth:sanctum', 'approved', 'role:secretary')->group(function 
 
     Route::get('/appointments/grouped/{id}', [AppointmentController::class, 'getGroupedAppointments']);
     Route::post('/appointments/{id}/status', [AppointmentController::class, 'updateStatus']);
+    Route::post('/Secretary/createPatientBySecretary', [AuthController::class, 'createPatientBySecretary']); 
 });
 
 

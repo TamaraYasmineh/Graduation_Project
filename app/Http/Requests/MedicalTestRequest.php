@@ -24,7 +24,6 @@ class MedicalTestRequest extends FormRequest
     {
           return [
             'file' => 'required|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120',
-            'medical_record_id' => 'required|exists:medical_records,id',
             'test_type' => 'nullable|string',
             'notes' => 'nullable|string',
         ];

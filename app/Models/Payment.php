@@ -48,13 +48,29 @@ class Payment extends Model
         $this->order->markFailed();
     }
 
+    // public function markCanceled($response)
+    // {
+    //     $this->update([
+    //         'status' => 'C',
+    //         'raw_response' => $response
+    //     ]);
+
+    //     $this->order->markCanceled();
+    // }
     public function markCanceled($response)
     {
         $this->update([
             'status' => 'C',
             'raw_response' => $response
         ]);
-
-        $this->order->markCanceled();
+    
+        // حمّل العلاقات بشكل صريح
+        $this->load('order.appointment');
+    
+        $this->order?->update(['status' => 'canceled']);
+    
+        $this->order?->appointment?->update([
+            'status' => 'cancelled'
+        ]);
     }
 }
