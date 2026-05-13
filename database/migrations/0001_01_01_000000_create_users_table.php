@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('password');
             $table->enum('gender',['male', 'female'])->nullable();;
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
+            $table->boolean('is_active')->default(false);
             $table->string('profile_image')->nullable();
             $table->rememberToken();
             $table->timestamps();
