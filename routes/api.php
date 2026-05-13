@@ -15,8 +15,8 @@ use App\Http\Controllers\SuperDoctor\SuperDoctorController;
 use App\Models\DeviceToken;
 use App\Services\FirebaseService;
 use Illuminate\Support\Facades\Route;
-
-
+use App\Http\Controllers\ProtocolController;
+use App\Http\Controllers\DrugController;
 
 Route::post('/register', [AuthController::class, 'register']); //
 Route::post('/login', [AuthController::class, 'login']); //
@@ -118,6 +118,12 @@ Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor'])->gro
     Route::post('/getPatient', [PatientController::class, 'getPatient']);
     Route::get('/patients/{id}',[PatientController::class, 'showPatient']
     );
+    Route::apiResource('protocols', ProtocolController::class);
+    Route::post('/protocols/{id}', [ProtocolController::class, 'update']);
+    Route::apiResource('drugs', DrugController::class);
+    Route::post('/drugs/{id}', [DrugController::class, 'update']);
+    Route::get('/showAllProtocolwithDrugs', [ProtocolController::class, 'showAllProtocolwithDrugs']);
+    Route::get('/showProtocolwithDrugs/{id}', [ProtocolController::class, 'showProtocolwithDrugs']);
 });
 
 //patient|secretary
