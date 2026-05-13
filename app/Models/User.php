@@ -87,6 +87,7 @@ class User extends Authenticatable
         'gender',
         'phone',
         'profile_image',
+        'is_active',
     ];
 
     /**

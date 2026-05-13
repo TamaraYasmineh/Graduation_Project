@@ -164,4 +164,99 @@ class ApproveAndRejectController extends BaseController
             'message' => $result['message']
         ]);
     }
+    public function deactivateUser($id, Request $request, FirebaseService $firebase)
+{
+    $user = User::find($id);
+
+    if (!$user) {
+
+        return response()->json([
+            'success' => false,
+            'message' => 'User not found'
+        ], 404);
+    }
+
+    if (!$user->is_active) {
+
+        return response()->json([
+            'success' => false,
+            'message' => 'User already deactivated'
+        ], 400);
+    }
+
+    $user->is_active = false;
+
+    $user->save();
+
+    $tokens = $user->deviceTokens()->pluck('token');
+
+    if ($tokens->isNotEmpty()) {
+
+        foreach ($tokens as $token) {
+
+            $firebase->sendNotification(
+                $token,
+                'Account deactivated',
+                'Your account has been temporarily disabled'
+            );
+        }
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'User deactivated successfully'
+    ]);
+}
+public function activateUser($id, Request $request, FirebaseService $firebase)
+{
+    $user = User::find($id);
+
+    if (!$user) {
+
+        return response()->json([
+            'success' => false,
+            'message' => 'User not found'
+        ], 404);
+    }
+
+    if ($user->is_active) {
+
+        return response()->json([
+            'success' => false,
+            'message' => 'User already active'
+        ], 400);
+    }
+
+    // optional protection
+    if ($user->status !== User::STATUS_APPROVED) {
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Only approved users can be activated'
+        ], 400);
+    }
+
+    $user->is_active = true;
+
+    $user->save();
+
+    $tokens = $user->deviceTokens()->pluck('token');
+
+    if ($tokens->isNotEmpty()) {
+
+        foreach ($tokens as $token) {
+
+            $firebase->sendNotification(
+                $token,
+                'Account activated',
+                'Your account is active again'
+            );
+        }
+    }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'User activated successfully'
+    ]);
+}
 }
