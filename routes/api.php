@@ -1,23 +1,26 @@
 <?php
 
+use App\Http\Controllers\SuperDoctor\EmployeeController;
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\Doctor\AppointmentController;
 use App\Http\Controllers\Doctor\BookingController;
+use App\Http\Controllers\DrugController;
 use App\Http\Controllers\FirebaseController;
 use App\Http\Controllers\MedicalTestController;
 use App\Http\Controllers\Patient\DoctorReviewController;
 use App\Http\Controllers\Patient\MedicalRecordController;
 use App\Http\Controllers\Patient\PatientController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\ProtocolController;
 use App\Http\Controllers\SuperDoctor\AddAdviceAndSupportAndInfoController;
 use App\Http\Controllers\SuperDoctor\ApproveAndRejectController;
 use App\Http\Controllers\SuperDoctor\SuperDoctorController;
 use App\Models\DeviceToken;
 use App\Services\FirebaseService;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProtocolController;
-use App\Http\Controllers\DrugController;
 use App\Http\Controllers\SessionController;
+
+
 Route::post('/register', [AuthController::class, 'register']); //
 Route::post('/login', [AuthController::class, 'login']); //
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']); //
@@ -77,6 +80,9 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
     Route::patch('/users/{id}/deactivate',[ApproveAndRejectController::class, 'deactivateUser']);
     Route::get('/payment/dashboard', [PaymentController::class, 'dashboard']);
     Route::get('/PaymentStatistics', [PaymentController::class, 'PaymentStatistics']);
+
+    Route::post('/storeEmployee', [EmployeeController::class, 'storeEmployee']);
+
 });
 
 //patient
@@ -141,7 +147,7 @@ Route::middleware('auth:sanctum', 'approved', 'role:secretary')->group(function 
 
     Route::get('/appointments/grouped/{id}', [AppointmentController::class, 'getGroupedAppointments']);
     Route::post('/appointments/{id}/status', [AppointmentController::class, 'updateStatus']);
-    Route::post('/Secretary/createPatientBySecretary', [AuthController::class, 'createPatientBySecretary']); 
+    Route::post('/Secretary/createPatientBySecretary', [AuthController::class, 'createPatientBySecretary']);
 });
 
 

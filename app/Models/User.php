@@ -24,7 +24,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Advice> $advices
  * @property-read int|null $advices_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Appointments> $appointments
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Appointment> $appointments
  * @property-read int|null $appointments_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\DeviceToken> $deviceTokens
  * @property-read int|null $device_tokens_count
