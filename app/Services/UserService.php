@@ -27,6 +27,7 @@ class UserService {
                 'phone' => $user->phone,
                 'gender' => $user->gender,
                 'status' => $user->status,
+                'is_active'=>$user->is_active,
                 'role' => $user->roles->pluck('name')->first()
             ];
         });
@@ -61,6 +62,7 @@ class UserService {
             'phone' => $user->phone,
             'gender' => $user->gender,
             'status' => $user->status,
+            'is_active'=>$user->is_active,
             'role' => $user->roles->pluck('name')->first()
         ];
     });
@@ -95,6 +97,7 @@ public function getApprovedUsers($user)
             'phone' => $user->phone,
             'gender' => $user->gender,
             'status' => $user->status,
+            'is_active'=>$user->is_active,
             'role' => $user->roles->pluck('name')->first()
         ];
     });
@@ -126,6 +129,7 @@ public function getSuperDoctors($user)
             'phone' => $user->phone,
             'gender' => $user->gender,
             'status' => $user->status,
+            'is_active'=>$user->is_active,
             'role' => $user->roles->pluck('name')->first()
         ]);
 
