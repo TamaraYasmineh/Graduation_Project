@@ -17,7 +17,7 @@ use App\Services\FirebaseService;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProtocolController;
 use App\Http\Controllers\DrugController;
-
+use App\Http\Controllers\SessionController;
 Route::post('/register', [AuthController::class, 'register']); //
 Route::post('/login', [AuthController::class, 'login']); //
 Route::post('/verify-otp', [AuthController::class, 'verifyOtp']); //
@@ -99,6 +99,7 @@ Route::middleware(['auth:sanctum', 'role:patient|super_doctor'])->group(function
     Route::delete('/deleteReview/{id}', [DoctorReviewController::class, 'deleteReview']);
 });
 
+
 //doctor|super_doctor
 Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor'])->group(function () {
 
@@ -125,6 +126,7 @@ Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor'])->gro
     Route::post('/drugs/{id}', [DrugController::class, 'update']);
     Route::get('/showAllProtocolwithDrugs', [ProtocolController::class, 'showAllProtocolwithDrugs']);
     Route::get('/showProtocolwithDrugs/{id}', [ProtocolController::class, 'showProtocolwithDrugs']);
+    Route::post('/calculate-bsa', [SessionController::class, 'calculateBsa']);
 });
 
 //patient|secretary
