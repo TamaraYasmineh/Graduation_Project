@@ -4,15 +4,16 @@ namespace App\Http\Controllers\SuperDoctor;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreEmployeeRequest;
+use App\Http\Requests\UpdateEmployeeRequest;
 use App\Http\Resources\EmployeeResource;
 use App\Models\Employee;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Carbon\Carbon;
 
 class EmployeeController extends Controller
 {
@@ -101,6 +102,187 @@ class EmployeeController extends Controller
                 'success' => false,
                 'message' => 'حدث خطأ أثناء إضافة الموظف.',
                 'error'   => config('app.debug') ? $e->getMessage() : null,
+            ], 500);
+        }
+    }
+
+    public function getAllEmployees(): JsonResponse
+    {
+        $employees = Employee::with('user')
+            ->latest()
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'count'   => $employees->count(),
+            'data'    => EmployeeResource::collection($employees),
+        ]);
+    }
+
+    public function getEmployeeById($id): JsonResponse
+    {
+        $employee = Employee::with('user')->find($id);
+
+        if (!$employee) {
+            return response()->json([
+                'success' => false,
+                'message' => 'الموظف غير موجود.',
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => new EmployeeResource($employee),
+        ]);
+    }
+
+    public function updateEmployeeInfo(UpdateEmployeeRequest $request, Employee $employee): JsonResponse
+    {
+        DB::beginTransaction();
+
+        try {
+
+            $validated = $request->validated();
+
+            // ---------------------------
+            // تحديث بيانات user
+            // ---------------------------
+            $userData = [];
+
+            if (isset($validated['name'])) {
+                $userData['name'] = $validated['name'];
+            }
+
+            if (isset($validated['email'])) {
+                $userData['email'] = $validated['email'];
+            }
+
+            if (isset($validated['phone'])) {
+                $userData['phone'] = $validated['phone'];
+            }
+
+            if (isset($validated['gender'])) {
+                $userData['gender'] = $validated['gender'];
+            }
+
+            // صورة جديدة
+            if ($request->hasFile('profile_image')) {
+
+                if ($employee->user->profile_image) {
+                    Storage::disk('public')->delete($employee->user->profile_image);
+                }
+
+                $userData['profile_image'] = $request
+                    ->file('profile_image')
+                    ->store('employees/profiles', 'public');
+            }
+
+            $employee->user->update($userData);
+
+            // ---------------------------
+            // تحديث بيانات employee
+            // ---------------------------
+            $employeeData = collect($validated)->except([
+                'name',
+                'email',
+                'phone',
+                'gender',
+                'profile_image'
+            ])->toArray();
+
+            // تحديث صورة الشهادة
+            if ($request->hasFile('degree_image')) {
+
+                if ($employee->degree_image) {
+                    Storage::disk('public')->delete($employee->degree_image);
+                }
+
+                $employeeData['degree_image'] = $request
+                    ->file('degree_image')
+                    ->store('employees/degrees', 'public');
+            }
+
+            // تحديث role في Spatie
+            if (isset($validated['role'])) {
+
+                $employee->user->syncRoles([$validated['role']]);
+            }
+
+            $employee->update($employeeData);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم تعديل بيانات الموظف بنجاح.',
+                'data' => new EmployeeResource(
+                    $employee->load('user')
+                ),
+            ]);
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء تعديل الموظف.',
+                'error' => config('app.debug')
+                    ? $e->getMessage()
+                    : null,
+            ], 500);
+        }
+    }
+
+    public function deleteEmployee(Employee $employee): JsonResponse
+    {
+        DB::beginTransaction();
+
+        try {
+
+            // ---------------------------
+            // حذف صورة البروفايل
+            // ---------------------------
+            if ($employee->user?->profile_image) {
+
+                Storage::disk('public')
+                    ->delete($employee->user->profile_image);
+            }
+
+            // ---------------------------
+            // حذف صورة الشهادة
+            // ---------------------------
+            if ($employee->degree_image) {
+
+                Storage::disk('public')
+                    ->delete($employee->degree_image);
+            }
+
+            // ---------------------------
+            // حذف المستخدم المرتبط
+            // ---------------------------
+            $employee->user()?->delete();
+
+            // ---------------------------
+            // حذف الموظف
+            // ---------------------------
+            $employee->delete();
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'تم حذف الموظف بنجاح.',
+            ]);
+        } catch (\Throwable $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'حدث خطأ أثناء حذف الموظف.',
+                'error' => config('app.debug')
+                    ? $e->getMessage()
+                    : null,
             ], 500);
         }
     }
