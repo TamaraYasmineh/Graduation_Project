@@ -82,7 +82,10 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
     Route::get('/PaymentStatistics', [PaymentController::class, 'PaymentStatistics']);
 
     Route::post('/storeEmployee', [EmployeeController::class, 'storeEmployee']);
-
+    Route::get('/getAllEmployees', [EmployeeController::class, 'getAllEmployees']);
+    Route::get('/getEmployeeById/{id}', [EmployeeController::class, 'getEmployeeById']);
+    Route::post('/updateEmployeeInfo/{employee}', [EmployeeController::class, 'updateEmployeeInfo']);
+    Route::delete('/deleteEmployee/{employee}', [EmployeeController::class, 'deleteEmployee']);
 });
 
 //patient
