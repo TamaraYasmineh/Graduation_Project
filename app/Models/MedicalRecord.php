@@ -140,6 +140,9 @@ class MedicalRecord extends Model
     $appUrl = rtrim(config('services.public_url'), '/');
     return $appUrl . '/storage/' . $this->qr_code_path;
     }
-
+    public function treatmentPlan()
+    {
+        return $this->hasOne(Treatment_plan::class);
+    }
 }
 
