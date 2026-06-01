@@ -136,6 +136,11 @@ Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor'])->gro
     Route::get('/showAllProtocolwithDrugs', [ProtocolController::class, 'showAllProtocolwithDrugs']);
     Route::get('/showProtocolwithDrugs/{id}', [ProtocolController::class, 'showProtocolwithDrugs']);
     Route::post('/calculate-bsa', [SessionController::class, 'calculateBsa']);
+    Route::post('/treatment-plans', [SessionController::class, 'storeTretmentPlane']);
+    Route::post('/treatment-plans/{id}', [SessionController::class, 'updateTretmentPlane']);
+    Route::post('/treatment-sessions',[SessionController::class, 'storeTreatmentSession']);
+    Route::post('/treatment-sessions/{id}',[SessionController::class, 'updateTreatmentSession']);
+
 });
 
 //patient|secretary

@@ -5,15 +5,25 @@ use App\Http\Requests\CalculateBsaRequest;
 use App\Http\Resources\BsaResource;
 use App\Services\SessionService;
 use Illuminate\Http\Request;
+use App\Models\Treatment_plan;
+use App\Models\Treatment_session;
 use App\Http\Requests\CalculateDoseRequest;
-
+use App\Http\Requests\TreatmentPlanRequest;
+use App\Http\Resources\TreatmentPlanResource;
+use App\Http\Requests\TreatmentSessionRequest;
+use App\Http\Resources\TreatmentSessionResource;
 class SessionController extends BaseController
 {
     private SessionService $bsaService;
-    private SessionService $doseService;
-    public function __construct(SessionService $bsaService)
+    private SessionService $treatmentPlanService;
+    private SessionService $treatmentPlan;
+    private SessionService $treatmentSessionService;
+    public function __construct(SessionService $bsaService,SessionService $treatmentPlanService,SessionService $treatmentPlan,SessionService $treatmentSessionService)
     {
         $this->bsaService = $bsaService;
+        $this->treatmentPlanService = $treatmentPlanService;
+        $this->treatmentPlan = $treatmentPlan;
+        $this->treatmentSessionService = $treatmentSessionService;
     }
     public function calculateBsa(CalculateBsaRequest $request)
 {
@@ -51,6 +61,46 @@ class SessionController extends BaseController
         'final_dose' => $doseResult['dose'],
         'unit' => $doseResult['unit'],
     ], 'Dose calculated successfully');
-}
+    }
+    public function storeTretmentPlane(TreatmentPlanRequest $request)
+    {
+        $plan = $this->treatmentPlanService
+            ->storeTreatmentPlan($request->validated());
+
+            return $this->sendResponse(
+                new TreatmentPlanResource($plan),
+                'تم تخزين خطة العلاج بنجاح'
+            );
+    }
+    public function storeTreatmentSession(
+        TreatmentSessionRequest $request
+    ) {
+    
+        $session = $this->treatmentSessionService
+            ->storeSession($request->validated());
+    
+        return $this->sendResponse(
+            new TreatmentSessionResource($session),
+            'تم تخزين الجلسة بنجاح'
+        );
+    }
+    public function updateTretmentPlane(Request $request, $id)
+    {
+        $treatmentPlan = Treatment_plan::findOrFail($id);
+        $updated = $treatmentPlan->update($treatmentPlan, $request->all());
+        return $this->sendResponse(
+            $updated,
+             'تم تعديل خطة العلاج بنجاح'
+        );
+    }
+    public function updateTreatmentSession(Request $request, $id)
+    {
+        $treatmentSession = Treatment_session::findOrFail($id);
+        $updated = $treatmentSession->update($treatmentSession, $request->all());
+        return $this->sendResponse(
+            $updated,
+            'تم تعديل الجلسة بنجاح'
+        );
+    }
     }
 

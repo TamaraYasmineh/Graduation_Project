@@ -1,7 +1,8 @@
 <?php
 
 namespace App\Services;
-
+use App\Models\Treatment_plan;
+use App\Models\Treatment_session;
 class SessionService
 {
     /* -----------------------------
@@ -81,5 +82,75 @@ class SessionService
                 'unit' => 'mg'
             ],
         };
+    }
+    public function storeTreatmentPlan($data)
+    {
+        return Treatment_plan::create([
+            'medical_record_id' => $data['medical_record_id'],
+            'diagnosis' => $data['diagnosis'],
+            'session_date' => $data['session_date'],
+            'protocol_id' => $data['protocol_id'] ?? null,
+            'medication' => $data['medication'] ?? null,
+            'duration' => $data['duration'] ?? null,
+        ]);
+    }
+    public function storeSession($data)
+{
+    return Treatment_session::create([
+
+        'treatment_plan_id' => $data['treatment_plan_id'],
+
+        'session_date' => $data['session_date'],
+
+        'height' => $data['height'] ?? null,
+
+        'weight' => $data['weight'] ?? null,
+
+        'bsa' => $data['bsa'] ?? null,
+
+        'dosage' => $data['dosage'] ?? null,
+
+        'lab_requested' => $data['lab_requested'] ?? false,
+
+        'lab_tests_requested' =>
+            $data['lab_tests_requested'] ?? null,
+
+        'lab_results' =>
+            $data['lab_results'] ?? null,
+
+        'notes' => $data['notes'] ?? null,
+    ]);
+}
+public function update(Treatment_plan $TreatmentPlan, array $data)
+    {
+        $TreatmentPlan->update([
+            'medical_record_id' => $data['medical_record_id'] ?? $TreatmentPlan->medical_record_id,
+
+            'diagnosis' => $data['diagnosis'] ?? $TreatmentPlan->diagnosis,
+            'session_date' => $data['session_date'] ?? $TreatmentPlan->session_date,
+
+            'protocol_id' => $data['protocol_id'] ?? $TreatmentPlan->protocol_id,
+            'medication' => $data['medication'] ?? $TreatmentPlan->medication,
+            'duration' => $data['duration'] ?? $TreatmentPlan->duration,            
+        ]);
+
+        return $TreatmentPlan;
+    }
+    public function updatetreatmentSession(Treatment_session $Treatment_session, array $data)
+    {
+        $Treatment_session->update([
+            'treatment_plan_id' => $data['treatment_plan_id'] ?? $Treatment_session->treatment_plan_id,
+            'session_date' => $data['session_date'] ?? $Treatment_session->session_date,
+            'height' => $data['height'] ?? $Treatment_session->height,
+            'weight' => $data['weight'] ?? $Treatment_session->weight,
+            'bsa' => $data['bsa'] ?? $Treatment_session->bsa,
+            'dosage' => $data['dosage'] ?? $Treatment_session->dosage,
+            'lab_requested' => $data['lab_requested'] ?? $Treatment_session->lab_requested,
+            'lab_tests_requested' => $data['lab_tests_requested'] ?? $Treatment_session->lab_tests_requested,
+            'lab_results' => $data['lab_results'] ?? $Treatment_session->lab_results,
+            'notes' => $data['notes'] ?? $Treatment_session->notes,            
+        ]);
+
+        return $Treatment_session;
     }
 }
