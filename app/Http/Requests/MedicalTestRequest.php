@@ -22,8 +22,10 @@ class MedicalTestRequest extends FormRequest
      */
     public function rules(): array
     {
-          return [
-            'file' => 'required|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120',
+        return [
+            // 'file' => 'required|file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120',
+            'files' => 'required|array|min:1',
+            'files.*' => 'file|mimes:jpg,jpeg,png,pdf,doc,docx|max:5120',
             'test_type' => 'nullable|string',
             'notes' => 'nullable|string',
         ];

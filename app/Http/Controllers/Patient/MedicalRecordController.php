@@ -203,10 +203,11 @@ class MedicalRecordController extends BaseController
      */
     public function showWithQr(Request $request)
     {
+        // dd($request->user());
         $user = $request->user();
 
         $record = MedicalRecord::query()->where('patient_id', $user->id)
-            ->with(['patient.patient'])
+            ->with(['patient.patient','medicalTests'])
             ->first();
 
         if (!$record) {
@@ -283,7 +284,7 @@ class MedicalRecordController extends BaseController
 
             $record = MedicalRecord::query()->where('id', $recordId)
                 ->where('patient_id', $patientId)
-                ->with(['patient.patient'])
+                ->with(['patient.patient','medicalTests'])
                 ->first();
 
             if (!$record) {
@@ -354,7 +355,7 @@ class MedicalRecordController extends BaseController
 
             $record = MedicalRecord::query()->where('id', $recordId)
                 ->where('patient_id', $patientId)
-                ->with(['patient.patient'])
+                ->with(['patient.patient','medicalTests'])
                 ->firstOrFail();
 
             return view('medical-records.scan-result', compact('record'));
