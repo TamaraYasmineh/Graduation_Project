@@ -363,5 +363,108 @@ class MedicalRecordController extends BaseController
             abort(400, 'QR Code غير صالح');
         }
     }
-
+    public function storeMedicalRecordBySecretary(
+        StoreMedicalRecordRequest $request,
+        BookingService $bookingService
+    ) {
+        return DB::transaction(function () use ($request, $bookingService) {
+    
+            $patient = User::findOrFail($request->patient_id);
+    
+            if ($patient->medicalRecord) {
+                return $this->sendError(
+                    'Medical record already exists',
+                    [],
+                    400
+                );
+            }
+    
+            $superDoctorUser = User::role('super_doctor')->first();
+    
+            if (!$superDoctorUser) {
+                return $this->sendError(
+                    'Super doctor not found',
+                    [],
+                    404
+                );
+            }
+    
+            $doctor = Doctor::where(
+                'user_id',
+                $superDoctorUser->id
+            )->first();
+    
+            $slot = $bookingService->getFirstAvailableSlot($doctor->id);
+    
+            if (!$slot) {
+                return $this->sendError(
+                    'لا يوجد مواعيد متاحة حالياً',
+                    [],
+                    200
+                );
+            }
+    
+            $record = MedicalRecord::create([
+                'patient_id' => $patient->id,
+                ...$request->validated()
+            ]);
+    
+            // إنشاء QR
+            $record->generateAndSaveQrCode();
+    
+            $appointment = Appointment::create([
+                'doctor_id'    => $doctor->id,
+                'patient_id'   => $patient->id,
+                'date'         => $slot['date'],
+                'start_time'   => $slot['start_time'],
+                'end_time'     => $slot['end_time'],
+                'status'       => 'pending',
+                'session_type' => $request->session_type,
+            ]);
+            $order = Order::create([
+                'amount' => $request->amount,
+                'status' => 'pending', // بانتظار الدفع اليدوي
+                'appointment_id' => $appointment->id,
+                'user_id' => $patient->id
+            ]);
+            return $this->sendResponse([
+                'medical_record' => $record,
+                'qr_code_url'    => $record->getQrCodeUrl(),
+                'appointment'    => $appointment,
+                'order'          => $order
+            ], 'تم إنشاء الأضبارة وتحويلها للسوبر دكتور');
+        });
+    }
+    public function bookAppointmentBySecretary(
+        BookAppointmentRequest $request,
+        BookingService $service
+    ) {
+    
+        $patient = User::findOrFail($request->patient_id);
+    
+        $result = $service->book(
+            $patient,
+            $request->doctor_id,
+            $request->date,
+            $request->start_time
+        );
+    
+        if (!$result['success']) {
+            return $this->sendError($result['message']);
+        }
+    
+        $appointment = $result['data'];
+    
+        $order = Order::create([
+            'amount' => $request->amount,
+            'status' => 'pending', // الدفع اليدوي لم يتم بعد
+            'appointment_id' => $appointment->id,
+            'user_id' => $patient->id
+        ]);
+    
+        return $this->sendResponse([
+            'appointment' => $appointment,
+            'order' => $order
+        ], 'تم الحجز بنجاح وسيتم الدفع يدوياً');
+    }
 }

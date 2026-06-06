@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\SuperDoctor;
 
+use App\Http\Controllers\BaseController;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreAdviceRequest;
 use App\Http\Requests\StoreCenterInfoRequest;
@@ -17,7 +18,7 @@ use App\Services\CenterInfoService;
 use App\Services\PsychologicalSupportService;
 use Illuminate\Http\Request;
 use App\Services\FirebaseService;
-class AddAdviceAndSupportAndInfoController extends Controller
+class AddAdviceAndSupportAndInfoController extends BaseController
 {
     protected $adviceService;
     protected $service;
@@ -88,52 +89,59 @@ class AddAdviceAndSupportAndInfoController extends Controller
     //store center's info
 
     public function storeCenterInformation(StoreCenterInfoRequest $request)
-    {
-        $result = $this->service->storeCenterInfo(
-            $request->validated(),
-            $request->user()
+{
+    $result = $this->service->storeCenterInfo(
+        $request->validated(),
+        $request->user()
+    );
+
+    if (!$result['success']) {
+        return $this->sendError(
+            $result['message'],
+            [],
+            $result['code']
         );
-
-        if (!$result['success']) {
-            return response()->json($result, $result['code']);
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => $result['data'],
-            'message' => 'Center info created'
-        ]);
     }
+
+    return $this->sendResponse(
+        $result['data'],
+        'Center info created',
+        201
+    );
+}
 
     //  تعديل
     public function updateCenterInformation($id, UpdateCenterInfoRequest $request)
-    {
-        $result = $this->service->updateCenterInfo(
-            $id,
-            $request->validated(),
-            $request->user()
+{
+    $result = $this->service->updateCenterInfo(
+        $id,
+        $request->validated(),
+        $request->user()
+    );
+
+    if (!$result['success']) {
+        return $this->sendError(
+            $result['message'],
+            [],
+            $result['code']
         );
-
-        if (!$result['success']) {
-            return response()->json($result, $result['code']);
-        }
-
-        return response()->json([
-            'success' => true,
-            'data' => $result['data'],
-            'message' => 'Center info updated'
-        ]);
     }
+
+    return $this->sendResponse(
+        $result['data'],
+        'Center info updated'
+    );
+}
     //عرض
     public function showCenterInformation()
-    {
-        $result = $this->service->getAllCenters();
+{
+    $result = $this->service->getAllCenters();
 
-        return response()->json([
-            'success' => true,
-            'data' => CenterInfoResource::collection($result['data'])
-        ]);
-    }
+    return response()->json([
+        'success' => true,
+        'data' => CenterInfoResource::collection($result['data'])
+    ]);
+}
     //psychological support
     // public function storePsychologicalSupport(StoreSupportRequest $request)
     // {

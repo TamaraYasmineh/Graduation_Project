@@ -110,7 +110,7 @@ Route::middleware(['auth:sanctum', 'role:patient|super_doctor'])->group(function
 
 
 //doctor|super_doctor
-Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor'])->group(function () {
+Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor|secretary'])->group(function () {
 
     Route::post('storeSchedule', [BookingController::class, 'storeSchedule']); //
     Route::post('/schedule/{id}', [BookingController::class, 'updateSchedule']);
@@ -157,6 +157,9 @@ Route::middleware('auth:sanctum', 'approved', 'role:secretary')->group(function 
     Route::get('/appointments/grouped/{id}', [AppointmentController::class, 'getGroupedAppointments']);
     Route::post('/appointments/{id}/status', [AppointmentController::class, 'updateStatus']);
     Route::post('/Secretary/createPatientBySecretary', [AuthController::class, 'createPatientBySecretary']);
+    Route::post('/medical-recordBysecretary', [MedicalRecordController::class, 'storeMedicalRecordBySecretary']);
+    Route::post('/book-appointment-by-secretary',[MedicalRecordController::class, 'bookAppointmentBySecretary']
+    );
 });
 
 
