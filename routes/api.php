@@ -147,6 +147,7 @@ Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor'])->gro
 Route::middleware('auth:sanctum', 'approved', 'role:patient|secretary')->group(function () {
 
     Route::post('/uploadMedicalTest', [MedicalTestController::class, 'uploadMedicalTest']);
+    Route::post('/uploadTestBySecretary/{record}', [MedicalTestController::class, 'uploadTestBySecretary']);
     Route::delete('/deleteMedicalTest/{id}', [MedicalTestController::class, 'deleteMedicalTest']);
 });
 
@@ -168,3 +169,9 @@ Route::get('/payment/trigger/{order}', [PaymentController::class, 'trigger'])
     ->name('payment.trigger');
 
 Route::post('/payment/cancel/{paymentId}', [PaymentController::class, 'cancel']);
+// Route::get('/medical-record/qr-test', function () {
+//     return response()->json([
+//         'status' => true,
+//         'message' => 'working'
+//     ]);
+// });
