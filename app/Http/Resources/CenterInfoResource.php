@@ -15,12 +15,16 @@ class CenterInfoResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
+            'id' => $this->id,
             'location' => $this->location,
-            'opening_hours' => $this->opening_hours,
             'address_on_map' => $this->address_on_map,
             'branches' => $this->branches,
             'services' => $this->services,
             'contact' => $this->contact,
+    
+            'working_hours' => WorkingHourResource::collection(
+                $this->whenLoaded('workingHours')
+            ),
         ];
     }
 }

@@ -38,4 +38,9 @@ class CenterInfo extends Model
         'services',
         'contact'
     ];
+
+    public function workingHours()
+    {
+        return $this->hasMany(Working_hours::class);
+    }
 }

@@ -28,6 +28,12 @@ class UpdateCenterInfoRequest extends FormRequest
             'address_on_map' => 'sometimes|string',
             'branches' => 'nullable|string',
             'services' => 'sometimes|string',
+            'working_hours' => 'sometimes|array',
+
+            'working_hours.*.day' => 'required|string',
+            'working_hours.*.start_time' => 'nullable|date_format:H:i',
+            'working_hours.*.end_time' => 'nullable|date_format:H:i',
+            'working_hours.*.is_closed' => 'required|boolean',
         ];
     }
 }
