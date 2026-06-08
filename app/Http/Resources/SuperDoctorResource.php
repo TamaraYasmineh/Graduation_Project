@@ -14,18 +14,22 @@ class SuperDoctorResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-return [
+        return [
             'id' => $this->id,
-
             'name' => $this->user->name,
             'email' => $this->user->email,
-
+        
             'specialization' => $this->specialization,
             'years_of_experience' => $this->years_of_experience,
             'license_number' => $this->license_number,
             'bio' => $this->bio,
             'department' => $this->department,
-            'profile_image'=>$this->profile_image ? asset('storage/' . $this->image): null,
+        
+            'patients_count' => $this->patients_count,
+        
+            'profile_image' => $this->profile_image
+                ? asset('storage/' . $this->image)
+                : null,
         ];
     }
 

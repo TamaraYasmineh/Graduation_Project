@@ -66,4 +66,13 @@ class Doctor extends Model
     {
         return round($this->reviews()->avg('rating'), 1);
     }
+    public function patients()
+{
+    return $this->belongsToMany(
+        User::class,
+        'appointments',
+        'doctor_id',
+        'patient_id'
+    )->distinct();
+}
 }

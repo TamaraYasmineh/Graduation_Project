@@ -87,20 +87,95 @@ class SessionController extends BaseController
     public function updateTretmentPlane(Request $request, $id)
     {
         $treatmentPlan = Treatment_plan::findOrFail($id);
-        $updated = $treatmentPlan->update($treatmentPlan, $request->all());
+    
+        $updatedPlan = $this->treatmentPlanService->update(
+            $treatmentPlan,
+            $request->all()
+        );
+    
         return $this->sendResponse(
-            $updated,
-             'تم تعديل خطة العلاج بنجاح'
+            new TreatmentPlanResource($updatedPlan),
+            'تم تعديل خطة العلاج بنجاح'
         );
     }
     public function updateTreatmentSession(Request $request, $id)
-    {
-        $treatmentSession = Treatment_session::findOrFail($id);
-        $updated = $treatmentSession->update($treatmentSession, $request->all());
-        return $this->sendResponse(
-            $updated,
-            'تم تعديل الجلسة بنجاح'
+{
+    $treatmentSession = Treatment_session::findOrFail($id);
+
+    $updatedSession = $this->treatmentSessionService
+        ->updatetreatmentSession(
+            $treatmentSession,
+            $request->all()
         );
-    }
+
+    return $this->sendResponse(
+        new TreatmentSessionResource($updatedSession),
+        'تم تعديل الجلسة بنجاح'
+    );
+}
+public function getAllTreatmentPlans()
+{
+    $plans = $this->treatmentPlanService
+        ->getAllTreatmentPlans();
+
+    return $this->sendResponse(
+        TreatmentPlanResource::collection($plans),
+        'تم جلب خطط العلاج بنجاح'
+    );
+}
+public function getTreatmentPlan($id)
+{
+    $plan = $this->treatmentPlanService
+        ->getTreatmentPlanById($id);
+
+    return $this->sendResponse(
+        new TreatmentPlanResource($plan),
+        'تم جلب خطة العلاج بنجاح'
+    );
+}
+public function deleteTreatmentPlan($id)
+{
+    $plan = Treatment_plan::findOrFail($id);
+
+    $this->treatmentPlanService
+        ->deleteTreatmentPlan($plan);
+
+    return $this->sendResponse(
+        [],
+        'تم حذف خطة العلاج بنجاح'
+    );
+}
+public function getAllTreatmentSessions()
+{
+    $sessions = $this->treatmentSessionService
+        ->getAllTreatmentSessions();
+
+    return $this->sendResponse(
+        TreatmentSessionResource::collection($sessions),
+        'تم جلب الجلسات بنجاح'
+    );
+}
+public function getTreatmentSession($id)
+{
+    $session = $this->treatmentSessionService
+        ->getTreatmentSessionById($id);
+
+    return $this->sendResponse(
+        new TreatmentSessionResource($session),
+        'تم جلب الجلسة بنجاح'
+    );
+}
+public function deleteTreatmentSession($id)
+{
+    $session = Treatment_session::findOrFail($id);
+
+    $this->treatmentSessionService
+        ->deleteTreatmentSession($session);
+
+    return $this->sendResponse(
+        [],
+        'تم حذف الجلسة بنجاح'
+    );
+}
     }
 

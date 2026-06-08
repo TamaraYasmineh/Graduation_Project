@@ -156,20 +156,43 @@ class BookingController extends BaseController
             'Doctor schedules'
         );
     }
-    public function getAllSchedules()
-    {
-        $schedules = Schedule::with('doctor.user')
-            ->orderBy('date')
-            ->get();
+    public function getAllSchedules(Request $request)
+{
+    $query = Schedule::with('doctor.user');
 
-        return $this->sendResponse(
-            ScheduleResource::collection($schedules),
-            'All schedules'
+    if ($request->filled('month')) {
+        $query->whereMonth('date', $request->month);
+
+        $query->whereYear(
+            'date',
+            $request->year ?? now()->year
         );
     }
-    public function getDoctorsWithSchedules()
-   {
-    $doctors = Doctor::with(['user', 'schedules'])
+
+    $schedules = $query->orderBy('date')->get();
+
+    return $this->sendResponse(
+        ScheduleResource::collection($schedules),
+        'All schedules'
+    );
+}
+public function getDoctorsWithSchedules(Request $request)
+{
+    $month = $request->month;
+    $year = $request->year ?? now()->year;
+
+    $doctors = Doctor::with([
+        'user',
+        'schedules' => function ($query) use ($month, $year) {
+
+            if ($month) {
+                $query->whereMonth('date', $month)
+                      ->whereYear('date', $year);
+            }
+
+            $query->orderBy('date');
+        }
+    ])
     ->withCount('appointments')
     ->get();
 
@@ -177,7 +200,7 @@ class BookingController extends BaseController
         DoctorScheduleResource::collection($doctors),
         'Doctors with schedules'
     );
-    }
+}
 public function getAllSchedulesFilterDay(Request $request)
 {
     $type = $request->query('type', 'daily');

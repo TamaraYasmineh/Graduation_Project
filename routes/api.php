@@ -140,7 +140,12 @@ Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor|secreta
     Route::post('/treatment-plans/{id}', [SessionController::class, 'updateTretmentPlane']);
     Route::post('/treatment-sessions',[SessionController::class, 'storeTreatmentSession']);
     Route::post('/treatment-sessions/{id}',[SessionController::class, 'updateTreatmentSession']);
-
+    Route::get('/treatment-plans',[SessionController::class, 'getAllTreatmentPlans']);
+    Route::get('/treatment-plans/{id}',[SessionController::class, 'getTreatmentPlan']);
+    Route::delete('/treatment-plans/{id}',[SessionController::class, 'deleteTreatmentPlan']);
+    Route::get('/treatment-sessions',[SessionController::class, 'getAllTreatmentSessions']);
+    Route::get('/treatment-sessions/{id}',[SessionController::class, 'getTreatmentSession']);
+    Route::delete('/treatment-sessions/{id}',[SessionController::class, 'deleteTreatmentSession']);
 });
 
 //patient|secretary
