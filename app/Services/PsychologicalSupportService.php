@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Services;
 
 use App\Models\PsychologicalSupport;
@@ -9,11 +10,11 @@ class PsychologicalSupportService
     // إضافة
     public function store($data, $user)
     {
-        if (!$user->can('create_support')) {
+        if (! $user->can('create_support')) {
             return [
                 'success' => false,
                 'message' => 'Only super doctor can add support',
-                'code' => 403
+                'code' => 403,
             ];
         }
 
@@ -29,31 +30,30 @@ class PsychologicalSupportService
 
         return [
             'success' => true,
-            'data' => $support
+            'data' => $support,
         ];
     }
-
 
     public function update($id, $data, $user)
     {
         $support = PsychologicalSupport::find($id);
 
-        if (!$support) {
+        if (! $support) {
             return [
                 'success' => false,
                 'message' => 'Support not found',
-                'code' => 404
+                'code' => 404,
             ];
         }
 
-        if (!$user->can('update_support') &&
-        $user->id !== $support->created_by)
+        if (! $user->can('update_support') &&
+        $user->id !== $support->created_by) {
             return [
                 'success' => false,
                 'message' => 'Unauthorized',
-                'code' => 403
+                'code' => 403,
             ];
-        
+        }
 
         // تعديل الصورة إذا أُرسلت
         if (isset($data['image'])) {
@@ -69,29 +69,28 @@ class PsychologicalSupportService
 
         return [
             'success' => true,
-            'data' => $support
+            'data' => $support,
         ];
     }
-
 
     public function delete($id, $user)
     {
         $support = PsychologicalSupport::find($id);
 
-        if (!$support) {
+        if (! $support) {
             return [
                 'success' => false,
                 'message' => 'Support not found',
-                'code' => 404
+                'code' => 404,
             ];
         }
 
-        if (!$user->can('delete_support') &&
+        if (! $user->can('delete_support') &&
             $user->id !== $support->created_by) {
             return [
                 'success' => false,
                 'message' => 'Unauthorized',
-                'code' => 403
+                'code' => 403,
             ];
         }
 
@@ -104,10 +103,9 @@ class PsychologicalSupportService
 
         return [
             'success' => true,
-            'message' => 'Deleted successfully'
+            'message' => 'Deleted successfully',
         ];
     }
-
 
     public function show()
     {

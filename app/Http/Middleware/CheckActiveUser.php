@@ -4,8 +4,9 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
+use Symfony\Component\HttpFoundation\Response;
+
 class CheckActiveUser
 {
     /**
@@ -17,20 +18,20 @@ class CheckActiveUser
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return response()->json([
-                'message' => 'Unauthenticated'
+                'message' => 'Unauthenticated',
             ], 401);
         }
 
         if ($user->status !== 'approved') {
 
             return response()->json([
-                'message' => match($user->status) {
+                'message' => match ($user->status) {
                     'pending' => 'حسابك قيد المراجعة من قبل الإدارة',
                     'rejected' => 'تم رفض حسابك، يرجى التواصل مع الإدارة',
                     default => 'غير مصرح'
-                }
+                },
             ], 403);
         }
 

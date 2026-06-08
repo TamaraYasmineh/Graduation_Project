@@ -23,9 +23,9 @@ class UpdateSupportRequest extends FormRequest
     public function rules(): array
     {
         return [
-        'title' => 'sometimes|string|max:255',
-        'content' => 'sometimes|string',
-        'image' => 'sometimes|image|mimes:jpg,png,jpeg|max:2048',
-    ];
+            'title' => 'sometimes|string|max:255',
+            'content' => 'sometimes|string',
+            'image' => 'sometimes|image|mimes:jpg,png,jpeg|max:2048',
+        ];
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -11,9 +12,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $start_time
  * @property string $end_time
  * @property int $slot_duration
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Doctor $doctor
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Doctor $doctor
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Schedule newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Schedule newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Schedule query()
@@ -25,6 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Schedule whereSlotDuration($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Schedule whereStartTime($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Schedule whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Schedule extends Model

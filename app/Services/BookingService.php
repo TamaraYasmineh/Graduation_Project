@@ -1,8 +1,9 @@
 <?php
+
 namespace App\Services;
 
-use App\Models\Schedule;
 use App\Models\Appointment;
+use App\Models\Schedule;
 use Carbon\Carbon;
 
 class BookingService
@@ -16,10 +17,10 @@ class BookingService
             $dayName = $date->format('l');
 
             $schedule = Schedule::where('doctor_id', $doctorId)
-            ->where('date', $date->toDateString())
+                ->where('date', $date->toDateString())
                 ->first();
 
-            if (!$schedule) {
+            if (! $schedule) {
                 continue;
             }
 
@@ -37,7 +38,7 @@ class BookingService
                     ->where('start_time', $slotStart)
                     ->exists();
 
-                if (!$exists) {
+                if (! $exists) {
                     return [
                         'date' => $date->toDateString(),
                         'start_time' => $slotStart,
@@ -51,6 +52,7 @@ class BookingService
 
         return null;
     }
+
     public function book($user, $doctorId, $date, $startTime)
     {
         // ✅ جيب الدوام
@@ -58,7 +60,7 @@ class BookingService
             ->where('date', $date)
             ->first();
 
-        if (!$schedule) {
+        if (! $schedule) {
             return ['success' => false, 'message' => 'لا يوجد دوام'];
         }
 
@@ -95,12 +97,12 @@ class BookingService
             'date' => $date,
             'start_time' => $startTime,
             'end_time' => $endTime,
-            'status' => 'pending'
+            'status' => 'pending',
         ]);
 
         return [
             'success' => true,
-            'data' => $appointment
+            'data' => $appointment,
         ];
     }
 }

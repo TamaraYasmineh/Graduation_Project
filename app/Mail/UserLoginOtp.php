@@ -3,9 +3,10 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Contracts\Queue\ShouldQueue;
+
 class UserLoginOtp extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
@@ -20,7 +21,7 @@ class UserLoginOtp extends Mailable implements ShouldQueue
     public function build()
     {
         return $this->subject('Your Login OTP Code')
-                    ->markdown('emails.user-login-otp')
-                    ->with(['otp' => $this->otp]);
+            ->markdown('emails.user-login-otp')
+            ->with(['otp' => $this->otp]);
     }
 }

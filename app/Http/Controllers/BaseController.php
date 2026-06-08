@@ -6,9 +6,9 @@ use Illuminate\Http\JsonResponse;
 
 class BaseController extends Controller
 {
-    public function sendResponse($result, $message , $status = 200): JsonResponse
+    public function sendResponse($result, $message, $status = 200): JsonResponse
     {
-         $data = [
+        $data = [
             'success' => true,
             'message' => $message,
             'data' => $result,
@@ -16,19 +16,21 @@ class BaseController extends Controller
             'status' => $status,
 
         ];
+
         return response()->json($data);
 
     }
 
     public function sendError($error, $message = [], $status = 401): JsonResponse
     {
-       $data = [
+        $data = [
             'success' => false,
             'message' => $message,
             'data' => null,
             'error' => $error,
             'status' => $status,
         ];
+
         return response()->json($data);
 
     }

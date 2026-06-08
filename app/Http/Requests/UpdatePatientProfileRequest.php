@@ -20,20 +20,18 @@ class UpdatePatientProfileRequest extends FormRequest
      *
      * @return array<string, ValidationRule|array<mixed>|string>
      */
-
-        public function rules(): array
-        {
-            return [
-                'name' => 'sometimes|string|max:255',
-                'email' => 'sometimes|email|unique:users,email,' . $this->user()->id,
-                'gender' => 'sometimes|in:male,female',
-                'phone' => 'sometimes|string|max:20',
-                'profile_image' => 'sometimes|image|mimes:jpg,jpeg,png|max:2048',
-                'date_of_birth' => 'sometimes|date|before:today',
-                'country' => 'sometimes|string',
-                'city' => 'sometimes|string',
-                'emergency_contact' => 'sometimes|string|max:20',
-            ];
-        }
-
+    public function rules(): array
+    {
+        return [
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,'.$this->user()->id,
+            'gender' => 'sometimes|in:male,female',
+            'phone' => 'sometimes|string|max:20',
+            'profile_image' => 'sometimes|image|mimes:jpg,jpeg,png|max:2048',
+            'date_of_birth' => 'sometimes|date|before:today',
+            'country' => 'sometimes|string',
+            'city' => 'sometimes|string',
+            'emergency_contact' => 'sometimes|string|max:20',
+        ];
+    }
 }

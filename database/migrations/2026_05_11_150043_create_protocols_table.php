@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('protocols', function (Blueprint $table) {
             $table->id();
-        // معلومات أساسية
+            // معلومات أساسية
             $table->string('name'); // اسم البروتوكول
             $table->string('disease_type'); // نوع السرطان
             $table->string('therapeutic_intent'); // curative / palliative / adjuvant

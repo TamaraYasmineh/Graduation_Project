@@ -4,15 +4,16 @@ namespace App\Services;
 
 use App\Models\Advice;
 use Illuminate\Support\Facades\Storage;
+
 class AdviceService
 {
     public function store($data, $user)
     {
-        if (!$user->can('create_advice')) {
+        if (! $user->can('create_advice')) {
             return [
                 'success' => false,
                 'message' => 'Only super admin can add advice',
-                'code' => 403
+                'code' => 403,
             ];
         }
         $iconPath = null;
@@ -29,17 +30,17 @@ class AdviceService
 
         return [
             'success' => true,
-            'data' => $advice
+            'data' => $advice,
         ];
     }
 
     public function getAdvices($user)
     {
-        if (!$user->hasAnyRole(['patient', 'super_doctor'])) {
+        if (! $user->hasAnyRole(['patient', 'super_doctor'])) {
             return [
                 'success' => false,
                 'message' => 'Unauthorized',
-                'code' => 403
+                'code' => 403,
             ];
         }
 
@@ -47,27 +48,28 @@ class AdviceService
 
         return [
             'success' => true,
-            'data' => $advices
+            'data' => $advices,
         ];
     }
+
     public function deleteAdvice($id, $user)
     {
         $advice = Advice::find($id);
 
-        if (!$advice) {
+        if (! $advice) {
             return [
                 'success' => false,
                 'message' => 'Advice not found',
-                'code' => 404
+                'code' => 404,
             ];
         }
 
-        if (!$user->can('delete_advice') &&
+        if (! $user->can('delete_advice') &&
         $user->id !== $advice->created_by) {
             return [
                 'success' => false,
                 'message' => 'Unauthorized',
-                'code' => 403
+                'code' => 403,
             ];
         }
         if ($advice->icon && Storage::disk('public')->exists($advice->icon)) {
@@ -77,46 +79,43 @@ class AdviceService
 
         return [
             'success' => true,
-            'message' => 'Advice deleted successfully'
+            'message' => 'Advice deleted successfully',
         ];
     }
 
     public function updateAdvice($id, $data, $user)
-{
-    $advice = Advice::find($id);
+    {
+        $advice = Advice::find($id);
 
-    if (!$advice) {
-        return [
-            'success' => false,
-            'message' => 'Advice not found',
-            'code' => 404
-        ];
-    }
-
-   
-    if (!$user->can('update_advice') &&
-    $user->id !== $advice->created_by) {
-        return [
-            'success' => false,
-            'message' => 'Unauthorized',
-            'code' => 403
-        ];
-    }
-    if (request()->hasFile('icon')) {
-
-        
-        if ($advice->icon && Storage::disk('public')->exists($advice->icon)) {
-            Storage::disk('public')->delete($advice->icon);
+        if (! $advice) {
+            return [
+                'success' => false,
+                'message' => 'Advice not found',
+                'code' => 404,
+            ];
         }
 
-        
-        $data['icon'] = request()->file('icon')->store('advices/icons', 'public');
-    }
-    $advice->update($data);
+        if (! $user->can('update_advice') &&
+        $user->id !== $advice->created_by) {
+            return [
+                'success' => false,
+                'message' => 'Unauthorized',
+                'code' => 403,
+            ];
+        }
+        if (request()->hasFile('icon')) {
 
-    return [
-        'success' => true,
-        'data' => $advice
-    ];
-}
+            if ($advice->icon && Storage::disk('public')->exists($advice->icon)) {
+                Storage::disk('public')->delete($advice->icon);
+            }
+
+            $data['icon'] = request()->file('icon')->store('advices/icons', 'public');
+        }
+        $advice->update($data);
+
+        return [
+            'success' => true,
+            'data' => $advice,
+        ];
+    }
 }

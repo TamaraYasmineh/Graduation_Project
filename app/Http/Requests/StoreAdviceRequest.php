@@ -22,10 +22,10 @@ class StoreAdviceRequest extends FormRequest
      */
     public function rules(): array
     {
-       return [
+        return [
             'title' => 'required|string|max:255',
             'content' => 'required|string',
-            'icon' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
+            'icon' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ];
     }
 }

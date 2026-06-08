@@ -3,15 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
  * @property int $user_id
  * @property string|null $hire_date
  * @property string|null $work_shift
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\User $user
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read User $user
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secretary newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secretary newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secretary query()
@@ -21,6 +23,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secretary whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secretary whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Secretary whereWorkShift($value)
+ *
  * @mixin \Eloquent
  */
 class Secretary extends Model
@@ -28,13 +31,14 @@ class Secretary extends Model
     protected $fillable = [
         'user_id',
         'hire_date',
-        'work_shift'
+        'work_shift',
     ];
 
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+
     public function medicalTests()
     {
         return $this->morphMany(MedicalTest::class, 'uploadable');

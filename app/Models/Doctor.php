@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -12,12 +14,13 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $license_number
  * @property string|null $bio
  * @property string|null $department
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Appointment> $appointments * @property-read int|null $appointments_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Schedule> $schedules
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, Appointment> $appointments * @property-read int|null $appointments_count
+ * @property-read Collection<int, Schedule> $schedules
  * @property-read int|null $schedules_count
- * @property-read \App\Models\User $user
+ * @property-read User $user
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Doctor newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Doctor newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Doctor query()
@@ -30,6 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Doctor whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Doctor whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Doctor whereYearsOfExperience($value)
+ *
  * @mixin \Eloquent
  */
 class Doctor extends Model
@@ -47,6 +51,7 @@ class Doctor extends Model
     {
         return $this->belongsTo(User::class);
     }
+
     public function appointments()
     {
         return $this->hasMany(Appointment::class);
@@ -55,8 +60,9 @@ class Doctor extends Model
     public function schedules()
     {
         return $this->hasMany(Schedule::class)
-            ->whereRaw("TIMESTAMP(date, end_time) > NOW()");
+            ->whereRaw('TIMESTAMP(date, end_time) > NOW()');
     }
+
     public function reviews()
     {
         return $this->hasMany(DoctorReview::class);
@@ -66,13 +72,22 @@ class Doctor extends Model
     {
         return round($this->reviews()->avg('rating'), 1);
     }
+
     public function patients()
-{
-    return $this->belongsToMany(
-        User::class,
-        'appointments',
-        'doctor_id',
-        'patient_id'
-    )->distinct();
-}
+    {
+        return $this->belongsToMany(
+            User::class,
+            'appointments',
+            'doctor_id',
+            'patient_id'
+        )->distinct();
+    }
+
+    public function consultant()
+    {
+        return $this->morphOne(
+            Consultant::class,
+            'consultable'
+        );
+    }
 }

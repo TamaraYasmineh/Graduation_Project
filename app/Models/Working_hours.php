@@ -17,8 +17,9 @@ class Working_hours extends Model
     protected $casts = [
         'is_closed' => 'boolean',
     ];
+
     public function centerInfo()
-{
-    return $this->belongsTo(CenterInfo::class);
-}
+    {
+        return $this->belongsTo(CenterInfo::class);
+    }
 }

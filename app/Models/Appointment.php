@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -12,10 +13,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $start_time
  * @property string $end_time
  * @property string $status
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\Doctor $doctor
- * @property-read \App\Models\User $patient
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Doctor $doctor
+ * @property-read User $patient
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointment newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointment newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointment query()
@@ -28,6 +30,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointment whereStartTime($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointment whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Appointment whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Appointment extends Model
@@ -39,7 +42,7 @@ class Appointment extends Model
         'start_time',
         'end_time',
         'status',
-        'session_type'
+        'session_type',
     ];
 
     public function doctor()
@@ -51,8 +54,9 @@ class Appointment extends Model
     {
         return $this->belongsTo(User::class, 'patient_id');
     }
+
     public function order()
-{
-    return $this->hasOne(Order::class, 'appointment_id');
-}
+    {
+        return $this->hasOne(Order::class, 'appointment_id');
+    }
 }

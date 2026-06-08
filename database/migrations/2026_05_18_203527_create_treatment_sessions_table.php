@@ -14,26 +14,26 @@ return new class extends Migration
         Schema::create('treatment_sessions', function (Blueprint $table) {
             $table->id();
             $table->foreignId('treatment_plan_id')
-            ->constrained('treatment_plans')
-            ->cascadeOnDelete();
+                ->constrained('treatment_plans')
+                ->cascadeOnDelete();
 
-        $table->date('session_date');
+            $table->date('session_date');
 
-        // vitals
-        $table->float('height')->nullable();
-        $table->float('weight')->nullable();
-        $table->float('bsa')->nullable();
+            // vitals
+            $table->float('height')->nullable();
+            $table->float('weight')->nullable();
+            $table->float('bsa')->nullable();
 
-        // treatment
-        $table->float('dosage')->nullable();
+            // treatment
+            $table->float('dosage')->nullable();
 
-        $table->text('notes')->nullable();
+            $table->text('notes')->nullable();
 
-        $table->boolean('lab_requested')->default(false);
+            $table->boolean('lab_requested')->default(false);
 
-        $table->text('lab_tests_requested')->nullable();
+            $table->text('lab_tests_requested')->nullable();
 
-        $table->text('lab_results')->nullable();
+            $table->text('lab_results')->nullable();
             $table->timestamps();
         });
     }

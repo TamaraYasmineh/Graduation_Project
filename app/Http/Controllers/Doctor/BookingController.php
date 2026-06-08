@@ -9,23 +9,21 @@ use App\Http\Resources\ScheduleResource;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\Schedule;
-use App\Services\BookingService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class BookingController extends BaseController
-
 {
     public function storeSchedule(StoreScheduleRequest $request)
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if (! $user) {
             return $this->sendError('Unauthenticated', [], 401);
         }
 
-        if (!$user->doctor()->exists()) {
+        if (! $user->doctor()->exists()) {
             return $this->sendError('هذا المستخدم ليس دكتور', [], 403);
         }
 
@@ -34,14 +32,14 @@ class BookingController extends BaseController
         $data = $request->validated();
         $data['doctor_id'] = $doctor->id;
         $exists = Schedule::query()->where('doctor_id', $doctor->id)
-        ->where('date', $data['date'])
-        ->where('start_time', $data['start_time'])
-        ->where('end_time', $data['end_time'])
-        ->exists();
+            ->where('date', $data['date'])
+            ->where('start_time', $data['start_time'])
+            ->where('end_time', $data['end_time'])
+            ->exists();
 
-    if ($exists) {
-        return $this->sendError(' لا يمكنك تكرار الدوام  ', [], 400);
-    }
+        if ($exists) {
+            return $this->sendError(' لا يمكنك تكرار الدوام  ', [], 400);
+        }
         $schedule = Schedule::create($data);
 
         return $this->sendResponse(
@@ -59,7 +57,7 @@ class BookingController extends BaseController
             ->where('doctor_id', $doctor->id)
             ->first();
 
-        if (!$schedule) {
+        if (! $schedule) {
             return $this->sendError('Schedule not found', [], 404);
         }
 
@@ -70,11 +68,12 @@ class BookingController extends BaseController
             'Schedule updated successfully'
         );
     }
+
     public function deleteSchedule($id)
     {
-        $schedule = Schedule::find($id);
+        $schedule = Schedule::query()->find($id);
 
-        if (!$schedule) {
+        if (! $schedule) {
             return $this->sendError('Schedule not found', [], 404);
         }
 
@@ -90,12 +89,12 @@ class BookingController extends BaseController
     {
         $user = Auth::user();
 
-        if (!$user || !$user->doctor()->exists()) {
+        if (! $user || ! $user->doctor()->exists()) {
             return $this->sendError('Unauthorized', [], 403);
         }
 
         $request->validate([
-            'date' => 'required|date'
+            'date' => 'required|date',
         ]);
 
         $doctorId = $user->doctor->id;
@@ -105,7 +104,7 @@ class BookingController extends BaseController
             ->where('date', $date)
             ->first();
 
-        if (!$schedule) {
+        if (! $schedule) {
             return $this->sendError('No schedule for this date', [], 404);
         }
 
@@ -125,7 +124,7 @@ class BookingController extends BaseController
                 ->where('start_time', $slotStart)
                 ->exists();
 
-            if (!$isBooked) {
+            if (! $isBooked) {
                 $slots[] = [
                     'start_time' => $slotStart,
                     'end_time' => $slotEnd,
@@ -137,11 +136,12 @@ class BookingController extends BaseController
 
         return $this->sendResponse($slots, 'Available slots');
     }
+
     public function getMySchedules()
     {
         $user = Auth::user();
 
-        if (!$user || !$user->doctor()->exists()) {
+        if (! $user || ! $user->doctor()->exists()) {
             return $this->sendError('Unauthorized', [], 403);
         }
 
@@ -156,125 +156,131 @@ class BookingController extends BaseController
             'Doctor schedules'
         );
     }
+
     public function getAllSchedules(Request $request)
-{
-    $query = Schedule::with('doctor.user');
+    {
+        $query = Schedule::with('doctor.user');
 
-    if ($request->filled('month')) {
-        $query->whereMonth('date', $request->month);
+        if ($request->filled('month')) {
+            $query->whereMonth('date', $request->month);
 
-        $query->whereYear(
-            'date',
-            $request->year ?? now()->year
+            $query->whereYear(
+                'date',
+                $request->year ?? now()->year
+            );
+        }
+
+        $schedules = $query->orderBy('date')->get();
+
+        return $this->sendResponse(
+            ScheduleResource::collection($schedules),
+            'All schedules'
         );
     }
 
-    $schedules = $query->orderBy('date')->get();
+    public function getDoctorsWithSchedules(Request $request)
+    {
+        $month = $request->month;
+        $year = $request->year ?? now()->year;
 
-    return $this->sendResponse(
-        ScheduleResource::collection($schedules),
-        'All schedules'
-    );
-}
-public function getDoctorsWithSchedules(Request $request)
-{
-    $month = $request->month;
-    $year = $request->year ?? now()->year;
+        $doctors = Doctor::with([
+            'user',
+            'schedules' => function ($query) use ($month, $year) {
 
-    $doctors = Doctor::with([
-        'user',
-        'schedules' => function ($query) use ($month, $year) {
+                if ($month) {
+                    $query->whereMonth('date', $month)
+                        ->whereYear('date', $year);
+                }
 
-            if ($month) {
-                $query->whereMonth('date', $month)
-                      ->whereYear('date', $year);
-            }
+                $query->orderBy('date');
+            },
+        ])
+            ->withCount('appointments')
+            ->withAvg('reviews', 'rating')
+            ->get();
 
-            $query->orderBy('date');
+        return $this->sendResponse(
+            DoctorScheduleResource::collection($doctors),
+            'Doctors with schedules'
+        );
+    }
+
+    public function getAllSchedulesFilterDay(Request $request)
+    {
+        $type = $request->query('type', 'daily');
+
+        $query = Schedule::with('doctor.user');
+
+        if ($type === 'daily') {
+            $query->whereDate('date', Carbon::today());
+
+        } elseif ($type === 'weekly') {
+            $query->whereBetween('date', [
+                Carbon::now()->startOfWeek(),
+                Carbon::now()->endOfWeek(),
+            ]);
+
+        } elseif ($type === 'monthly') {
+            $query->whereMonth('date', Carbon::now()->month)
+                ->whereYear('date', Carbon::now()->year);
         }
-    ])
-    ->withCount('appointments')
-    ->get();
 
-    return $this->sendResponse(
-        DoctorScheduleResource::collection($doctors),
-        'Doctors with schedules'
-    );
-}
-public function getAllSchedulesFilterDay(Request $request)
-{
-    $type = $request->query('type', 'daily');
+        $schedules = $query->orderBy('date')->get();
 
-    $query = Schedule::with('doctor.user');
-
-    if ($type === 'daily') {
-        $query->whereDate('date', Carbon::today());
-
-    } elseif ($type === 'weekly') {
-        $query->whereBetween('date', [
-            Carbon::now()->startOfWeek(),
-            Carbon::now()->endOfWeek()
-        ]);
-
-    } elseif ($type === 'monthly') {
-        $query->whereMonth('date', Carbon::now()->month)
-              ->whereYear('date', Carbon::now()->year);
+        return $this->sendResponse(
+            ScheduleResource::collection($schedules),
+            'Schedules filtered'
+        );
     }
 
-    $schedules = $query->orderBy('date')->get();
-
-    return $this->sendResponse(
-        ScheduleResource::collection($schedules),
-        'Schedules filtered'
-    );
-}
-public function getAllSchedulesMonth(Request $request)
-{
-    $request->validate([
-        'month' => 'required|integer|min:1|max:12',
-        'year' => 'required|integer'
-    ]);
-
-    $query = Schedule::with('doctor.user');
-
-    $query->whereMonth('date', $request->month)
-          ->whereYear('date', $request->year);
-
-    $schedules = $query->orderBy('date')->get();
-
-    return $this->sendResponse(
-        ScheduleResource::collection($schedules),
-        'Schedules filtered'
-    );
-}
-public function getAllSchedulesWeek(Request $request)
-{
-    $type = $request->query('type', 'daily');
-
-    $query = Schedule::with('doctor.user');
-
-    if ($type === 'daily') {
-
-        $query->whereDate('date', Carbon::today());
-
-    } elseif ($type === 'weekly') {
-
-        $query->whereBetween('date', [
-            Carbon::now()->startOfWeek(),
-            Carbon::now()->endOfWeek()
+    public function getAllSchedulesMonth(Request $request)
+    {
+        $request->validate([
+            'month' => 'required|integer|min:1|max:12',
+            'year' => 'required|integer',
         ]);
 
-    } elseif ($type === 'monthly') {
+        $query = Schedule::with('doctor.user');
 
-        $query->whereMonth('date', now()->month)
-              ->whereYear('date', now()->year);
+        $query->whereMonth('date', $request->month)
+            ->whereYear('date', $request->year);
+
+        $schedules = $query->orderBy('date')->get();
+
+        return $this->sendResponse(
+            ScheduleResource::collection($schedules),
+            'Schedules filtered'
+        );
     }
 
-    $schedules = $query->orderBy('date')->get();
+    public function getAllSchedulesWeek(Request $request)
+    {
+        $type = $request->query('type', 'daily');
 
-    return $this->sendResponse(
-        ScheduleResource::collection($schedules),
-        'Schedules filtered'
-    );
-}
+        $query = Schedule::with('doctor.user');
+
+        if ($type === 'daily') {
+
+            $query->whereDate('date', Carbon::today());
+
+        } elseif ($type === 'weekly') {
+
+            $query->whereBetween('date', [
+                Carbon::now()->startOfWeek(),
+                Carbon::now()->endOfWeek(),
+            ]);
+
+        } elseif ($type === 'monthly') {
+
+            $query->whereMonth('date', now()->month)
+                ->whereYear('date', now()->year);
+        }
+
+        $schedules = $query->orderBy('date')->get();
+
+        return $this->sendResponse(
+            ScheduleResource::collection($schedules),
+            'Schedules filtered'
+        );
+    }
 }

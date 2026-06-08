@@ -2,20 +2,19 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Cache;
-use App\Models\User;
 use App\Models\Doctor;
 use App\Models\Patient;
 use App\Models\Secretary;
-use Illuminate\Support\Facades\Hash;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
-use App\Services\OTPService;
+use Illuminate\Support\Facades\Hash;
 
 class AuthService
 {
     public function __construct(
         private OTPService $otpService
     ) {}
+
     public function register(array $data)
     {
         return DB::transaction(function () use ($data) {
@@ -57,7 +56,7 @@ class AuthService
                     'years_of_experience' => $data['years_of_experience'] ?? null,
                     'license_number' => $data['license_number'],
                     'bio' => $data['bio'],
-                    'department' => $data['department']
+                    'department' => $data['department'],
                 ]);
                 break;
 
@@ -80,5 +79,4 @@ class AuthService
                 break;
         }
     }
-  
 }

@@ -17,7 +17,7 @@ class AvailableAppointmentResource extends JsonResource
         return [
             'date' => $this['date'],
             'day' => $this['day'],
-            'available_slots' => $this['slots']
+            'available_slots' => $this['slots'],
         ];
     }
 }

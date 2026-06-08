@@ -17,7 +17,7 @@ class MedicalTestResource extends JsonResource
         return [
             'id' => $this->id,
 
-            'file_url' => asset('storage/' . $this->file_path),
+            'file_url' => asset('storage/'.$this->file_path),
             'file_type' => $this->file_type,
 
             'test_type' => $this->test_type,

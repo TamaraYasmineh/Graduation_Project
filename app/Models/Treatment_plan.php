@@ -12,7 +12,7 @@ class Treatment_plan extends Model
         'protocol_id',
         'medication',
         'duration',
-        'session_date'
+        'session_date',
     ];
 
     /*

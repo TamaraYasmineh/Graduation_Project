@@ -77,22 +77,24 @@ class ProtocolController extends BaseController
             'Protocol deleted successfully'
         );
     }
+
     public function showAllProtocolwithDrugs()
-{
-    $protocols = Protocol::with('drugs')->get();
+    {
+        $protocols = Protocol::with('drugs')->get();
 
-    return $this->sendResponse(
-        $protocols,
-        'Protocols retrieved successfully'
-    );
-}
-public function showProtocolwithDrugs($id)
-{
-    $protocol = Protocol::with('drugs')->findOrFail($id);
+        return $this->sendResponse(
+            $protocols,
+            'Protocols retrieved successfully'
+        );
+    }
 
-    return $this->sendResponse(
-        $protocol,
-        'Protocol retrieved successfully'
-    );
-}
+    public function showProtocolwithDrugs($id)
+    {
+        $protocol = Protocol::with('drugs')->findOrFail($id);
+
+        return $this->sendResponse(
+            $protocol,
+            'Protocol retrieved successfully'
+        );
+    }
 }

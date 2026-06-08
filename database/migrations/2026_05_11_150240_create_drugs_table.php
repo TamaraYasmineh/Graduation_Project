@@ -16,8 +16,8 @@ return new class extends Migration
             $table->foreignId('protocol_id')->constrained('protocols')->onDelete('cascade');
             $table->string('name'); // اسم الدواء
             $table->string('dose'); // الجرعة
-             $table->string('dose_basis'); // mg/m² - mg/kg - flat dose
-             $table->string('route'); // IV - Oral - SC
+            $table->string('dose_basis'); // mg/m² - mg/kg - flat dose
+            $table->string('route'); // IV - Oral - SC
             $table->timestamps();
         });
     }

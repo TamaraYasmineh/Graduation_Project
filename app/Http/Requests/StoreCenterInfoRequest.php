@@ -22,28 +22,28 @@ class StoreCenterInfoRequest extends FormRequest
      */
     public function rules(): array
     {
-    //    return [
-    //         'location' => 'required|string|max:255',
-    //         'opening_hours' => 'required|string|max:255',
-    //         'address_on_map' => 'required|string',
-    //         'branches' => 'nullable|string',
-    //         'services' => 'required|string',
-    //         'contact' => 'required|string',
-    //     ];
-    return [
-        'location' => 'required|string|max:255',
-        'address_on_map' => 'required|string',
-        'opening_hours' => 'nullable|string|max:255',
-        'branches' => 'nullable|string',
-        'services' => 'required|string',
-        'contact' => 'required|string',
+        //    return [
+        //         'location' => 'required|string|max:255',
+        //         'opening_hours' => 'required|string|max:255',
+        //         'address_on_map' => 'required|string',
+        //         'branches' => 'nullable|string',
+        //         'services' => 'required|string',
+        //         'contact' => 'required|string',
+        //     ];
+        return [
+            'location' => 'required|string|max:255',
+            'address_on_map' => 'required|string',
+            'opening_hours' => 'nullable|string|max:255',
+            'branches' => 'nullable|string',
+            'services' => 'required|string',
+            'contact' => 'required|string',
 
-        'working_hours' => 'required|array|min:1',
+            'working_hours' => 'required|array|min:1',
 
-        'working_hours.*.day' => 'required|string',
-        'working_hours.*.start_time' => 'nullable|date_format:H:i',
-        'working_hours.*.end_time' => 'nullable|date_format:H:i',
-        'working_hours.*.is_closed' => 'required|boolean',
-    ];
+            'working_hours.*.day' => 'required|string',
+            'working_hours.*.start_time' => 'nullable|date_format:H:i',
+            'working_hours.*.end_time' => 'nullable|date_format:H:i',
+            'working_hours.*.is_closed' => 'required|boolean',
+        ];
     }
 }

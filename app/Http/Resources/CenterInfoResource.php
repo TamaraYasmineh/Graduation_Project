@@ -21,7 +21,7 @@ class CenterInfoResource extends JsonResource
             'branches' => $this->branches,
             'services' => $this->services,
             'contact' => $this->contact,
-    
+
             'working_hours' => WorkingHourResource::collection(
                 $this->whenLoaded('workingHours')
             ),

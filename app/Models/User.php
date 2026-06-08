@@ -3,10 +3,18 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Database\Factories\UserFactory;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\DatabaseNotification;
+use Illuminate\Notifications\DatabaseNotificationCollection;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
+use Laravel\Sanctum\PersonalAccessToken;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -14,35 +22,36 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $name
  * @property string $email
  * @property string|null $phone
- * @property \Illuminate\Support\Carbon|null $email_verified_at
+ * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $gender
  * @property string $status
  * @property string|null $profile_image
  * @property string|null $remember_token
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Advice> $advices
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read Collection<int, Advice> $advices
  * @property-read int|null $advices_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Appointment> $appointments
+ * @property-read Collection<int, Appointment> $appointments
  * @property-read int|null $appointments_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\DeviceToken> $deviceTokens
+ * @property-read Collection<int, DeviceToken> $deviceTokens
  * @property-read int|null $device_tokens_count
- * @property-read \App\Models\Doctor|null $doctor
+ * @property-read Doctor|null $doctor
  * @property-read mixed $role
- * @property-read \App\Models\MedicalRecord|null $medicalRecord
- * @property-read \Illuminate\Notifications\DatabaseNotificationCollection<int, \Illuminate\Notifications\DatabaseNotification> $notifications
+ * @property-read MedicalRecord|null $medicalRecord
+ * @property-read DatabaseNotificationCollection<int, DatabaseNotification> $notifications
  * @property-read int|null $notifications_count
- * @property-read \App\Models\Patient|null $patient
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Permission> $permissions
+ * @property-read Patient|null $patient
+ * @property-read Collection<int, Permission> $permissions
  * @property-read int|null $permissions_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Role> $roles
+ * @property-read Collection<int, Role> $roles
  * @property-read int|null $roles_count
- * @property-read \App\Models\Secretary|null $secretary
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PsychologicalSupport> $supports
+ * @property-read Secretary|null $secretary
+ * @property-read Collection<int, PsychologicalSupport> $supports
  * @property-read int|null $supports_count
- * @property-read \Illuminate\Database\Eloquent\Collection<int, \Laravel\Sanctum\PersonalAccessToken> $tokens
+ * @property-read Collection<int, PersonalAccessToken> $tokens
  * @property-read int|null $tokens_count
+ *
  * @method static \Database\Factories\UserFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User newQuery()
@@ -63,12 +72,13 @@ use Spatie\Permission\Traits\HasRoles;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutPermission($permissions)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|User withoutRole($roles, $guard = null)
+ *
  * @mixin \Eloquent
  */
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens, HasRoles;
+    /** @use HasFactory<UserFactory> */
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -76,9 +86,13 @@ class User extends Authenticatable
      * @var list<string>
      */
     public const STATUS_PENDING = 'pending';
+
     public const STATUS_APPROVED = 'approved';
+
     public const STATUS_REJECTED = 'rejected';
+
     protected $guard_name = 'api';
+
     protected $fillable = [
         'name',
         'email',
@@ -112,6 +126,7 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+
     public function doctor()
     {
         return $this->hasOne(Doctor::class);
@@ -126,30 +141,37 @@ class User extends Authenticatable
     {
         return $this->hasOne(Secretary::class);
     }
+
     public function getRoleAttribute()
     {
         return $this->roles->first()?->name;
     }
+
     public function supports()
     {
         return $this->hasMany(PsychologicalSupport::class, 'created_by');
     }
+
     public function advices()
     {
         return $this->hasMany(Advice::class, 'created_by');
     }
+
     public function medicalRecord()
     {
         return $this->hasOne(MedicalRecord::class, 'patient_id');
     }
+
     public function appointments()
     {
         return $this->hasMany(Appointment::class, 'patient_id');
     }
+
     public function deviceTokens()
     {
         return $this->hasMany(DeviceToken::class);
     }
+
     public function orders()
     {
         return $this->hasMany(Order::class);
@@ -161,5 +183,12 @@ class User extends Authenticatable
             Payment::class,
             Order::class
         );
+    }
+
+    public function getProfileImageUrlAttribute()
+    {
+        return $this->profile_image
+            ? asset('storage/'.$this->profile_image)
+            : null;
     }
 }

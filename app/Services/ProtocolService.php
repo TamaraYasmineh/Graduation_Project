@@ -45,7 +45,6 @@ class ProtocolService
             'pre_medications' => $data['pre_medications'] ?? $protocol->pre_medications,
             'mandatory_tests' => $data['mandatory_tests'] ?? $protocol->mandatory_tests,
 
-            
         ]);
 
         return $protocol;

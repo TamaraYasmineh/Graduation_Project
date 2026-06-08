@@ -1,25 +1,22 @@
 <?php
 
-use App\Http\Controllers\SuperDoctor\EmployeeController;
 use App\Http\Controllers\Auth\AuthController;
+use App\Http\Controllers\ConsultantController;
 use App\Http\Controllers\Doctor\AppointmentController;
 use App\Http\Controllers\Doctor\BookingController;
 use App\Http\Controllers\DrugController;
-use App\Http\Controllers\FirebaseController;
 use App\Http\Controllers\MedicalTestController;
 use App\Http\Controllers\Patient\DoctorReviewController;
 use App\Http\Controllers\Patient\MedicalRecordController;
 use App\Http\Controllers\Patient\PatientController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\ProtocolController;
+use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SuperDoctor\AddAdviceAndSupportAndInfoController;
 use App\Http\Controllers\SuperDoctor\ApproveAndRejectController;
+use App\Http\Controllers\SuperDoctor\EmployeeController;
 use App\Http\Controllers\SuperDoctor\SuperDoctorController;
-use App\Models\DeviceToken;
-use App\Services\FirebaseService;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\SessionController;
-
 
 Route::post('/register', [AuthController::class, 'register']); //
 Route::post('/login', [AuthController::class, 'login']); //
@@ -28,8 +25,8 @@ Route::post('/resend-otp', [AuthController::class, 'resendOtp']);
 Route::post('/forgotPassword', [AuthController::class, 'forgotPassword']);
 Route::post('/resetPassword', [AuthController::class, 'resetPassword']);
 Route::get('medical-records/scan', [MedicalRecordController::class, 'scan'])
-     ->name('medical-records.scan');
-//Auth
+    ->name('medical-records.scan');
+// Auth
 Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::post('/patient/profile', [PatientController::class, 'updateProfile']); //
@@ -37,7 +34,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/getDoctorReviews/{doctorId}', [DoctorReviewController::class, 'getDoctorReviews']);
 });
 
-//super_doctor|patient|secretary
+// super_doctor|patient|secretary
 Route::middleware(['auth:sanctum', 'role:super_doctor|patient|secretary'])->group(function () {
 
     // Route::get('/getDoctors', [SuperDoctorController::class, 'getDoctors']);
@@ -52,7 +49,7 @@ Route::middleware(['auth:sanctum', 'role:super_doctor|patient|secretary'])->grou
     Route::get('/doctors-schedules', [BookingController::class, 'getDoctorsWithSchedules']);
 });
 
-//super_doctor
+// super_doctor
 Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
 
     Route::post('/storeAdvices', [AddAdviceAndSupportAndInfoController::class, 'storeAdvices']); //
@@ -66,7 +63,6 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
     Route::post('/updatePsychologicalSupport/{id}', [AddAdviceAndSupportAndInfoController::class, 'updatePsychologicalSupport']); //
     Route::delete('/destroyPsychologicalSupport/{id}', [AddAdviceAndSupportAndInfoController::class, 'destroyPsychologicalSupport']); //
 
-
     Route::get('/getPendingUsers', [ApproveAndRejectController::class, 'getPendingUsers']); //
     Route::get('/rejected-users', [ApproveAndRejectController::class, 'getRejectedUsers']); //
     Route::get('/approved-users', [ApproveAndRejectController::class, 'getApprovedUsers']); //
@@ -76,8 +72,8 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
 
     Route::post('toggleDoctorRole/{id}', [SuperDoctorController::class, 'toggleDoctorRole']); //
 
-    Route::patch('/users/{id}/activate',[ApproveAndRejectController::class, 'activateUser']);
-    Route::patch('/users/{id}/deactivate',[ApproveAndRejectController::class, 'deactivateUser']);
+    Route::patch('/users/{id}/activate', [ApproveAndRejectController::class, 'activateUser']);
+    Route::patch('/users/{id}/deactivate', [ApproveAndRejectController::class, 'deactivateUser']);
     Route::get('/payment/dashboard', [PaymentController::class, 'dashboard']);
     Route::get('/PaymentStatistics', [PaymentController::class, 'PaymentStatistics']);
 
@@ -86,9 +82,14 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
     Route::get('/getEmployeeById/{id}', [EmployeeController::class, 'getEmployeeById']);
     Route::post('/updateEmployeeInfo/{employee}', [EmployeeController::class, 'updateEmployeeInfo']);
     Route::delete('/deleteEmployee/{employee}', [EmployeeController::class, 'deleteEmployee']);
+
+    Route::post('/consultants/internal', [ConsultantController::class, 'addInternalDoctor']);
+
+    Route::post('/consultants/external', [ConsultantController::class, 'addExternalDoctor']);
+    Route::post('/update/{consultantId}', [ConsultantController::class, 'update']);
 });
 
-//patient
+// patient
 Route::middleware(['auth:sanctum', 'role:patient'])->group(function () {
 
     Route::post('/book-appointment', [MedicalRecordController::class, 'bookAppointment']); //
@@ -98,18 +99,21 @@ Route::middleware(['auth:sanctum', 'role:patient'])->group(function () {
 
     Route::post('/addReview', [DoctorReviewController::class, 'addReview']);
     Route::get('medical-record/qr', [MedicalRecordController::class, 'showWithQr'])
-         ->name('medical-records.show-qr');
-    });
+        ->name('medical-records.show-qr');
 
-//patient|super_doctor
+    Route::post('/uploadMedicalTest', [MedicalTestController::class, 'uploadMedicalTest']);
+});
+
+// patient|super_doctor
 Route::middleware(['auth:sanctum', 'role:patient|super_doctor'])->group(function () {
 
     Route::post('/updateReview/{id}', [DoctorReviewController::class, 'updateReview']);
     Route::delete('/deleteReview/{id}', [DoctorReviewController::class, 'deleteReview']);
+
+    Route::get('/consultants', [ConsultantController::class, 'index']);
 });
 
-
-//doctor|super_doctor
+// doctor|super_doctor
 Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor|secretary'])->group(function () {
 
     Route::post('storeSchedule', [BookingController::class, 'storeSchedule']); //
@@ -127,7 +131,9 @@ Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor|secreta
 
     Route::get('/getByRecord/{id}', [MedicalTestController::class, 'getByRecord']);
     Route::post('/getPatient', [PatientController::class, 'getPatient']);
-    Route::get('/patients/{id}',[PatientController::class, 'showPatient']
+    Route::get(
+        '/patients/{id}',
+        [PatientController::class, 'showPatient']
     );
     Route::apiResource('protocols', ProtocolController::class);
     Route::post('/protocols/{id}', [ProtocolController::class, 'update']);
@@ -138,35 +144,32 @@ Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor|secreta
     Route::post('/calculate-bsa', [SessionController::class, 'calculateBsa']);
     Route::post('/treatment-plans', [SessionController::class, 'storeTretmentPlane']);
     Route::post('/treatment-plans/{id}', [SessionController::class, 'updateTretmentPlane']);
-    Route::post('/treatment-sessions',[SessionController::class, 'storeTreatmentSession']);
-    Route::post('/treatment-sessions/{id}',[SessionController::class, 'updateTreatmentSession']);
-    Route::get('/treatment-plans',[SessionController::class, 'getAllTreatmentPlans']);
-    Route::get('/treatment-plans/{id}',[SessionController::class, 'getTreatmentPlan']);
-    Route::delete('/treatment-plans/{id}',[SessionController::class, 'deleteTreatmentPlan']);
-    Route::get('/treatment-sessions',[SessionController::class, 'getAllTreatmentSessions']);
-    Route::get('/treatment-sessions/{id}',[SessionController::class, 'getTreatmentSession']);
-    Route::delete('/treatment-sessions/{id}',[SessionController::class, 'deleteTreatmentSession']);
+    Route::post('/treatment-sessions', [SessionController::class, 'storeTreatmentSession']);
+    Route::post('/treatment-sessions/{id}', [SessionController::class, 'updateTreatmentSession']);
+    Route::get('/treatment-plans', [SessionController::class, 'getAllTreatmentPlans']);
+    Route::get('/treatment-plans/{id}', [SessionController::class, 'getTreatmentPlan']);
+    Route::delete('/treatment-plans/{id}', [SessionController::class, 'deleteTreatmentPlan']);
+    Route::get('/treatment-sessions', [SessionController::class, 'getAllTreatmentSessions']);
+    Route::get('/treatment-sessions/{id}', [SessionController::class, 'getTreatmentSession']);
+    Route::delete('/treatment-sessions/{id}', [SessionController::class, 'deleteTreatmentSession']);
 });
 
-//patient|secretary
+// patient|secretary
 Route::middleware('auth:sanctum', 'approved', 'role:patient|secretary')->group(function () {
-
-    Route::post('/uploadMedicalTest', [MedicalTestController::class, 'uploadMedicalTest']);
-    Route::post('/uploadTestBySecretary/{record}', [MedicalTestController::class, 'uploadTestBySecretary']);
     Route::delete('/deleteMedicalTest/{id}', [MedicalTestController::class, 'deleteMedicalTest']);
 });
 
-//secretary
+// secretary
 Route::middleware('auth:sanctum', 'approved', 'role:secretary')->group(function () {
 
     Route::get('/appointments/grouped/{id}', [AppointmentController::class, 'getGroupedAppointments']);
     Route::post('/appointments/{id}/status', [AppointmentController::class, 'updateStatus']);
     Route::post('/Secretary/createPatientBySecretary', [AuthController::class, 'createPatientBySecretary']);
     Route::post('/medical-recordBysecretary', [MedicalRecordController::class, 'storeMedicalRecordBySecretary']);
-    Route::post('/book-appointment-by-secretary',[MedicalRecordController::class, 'bookAppointmentBySecretary']
+    Route::post('/book-appointment-by-secretary', [MedicalRecordController::class, 'bookAppointmentBySecretary']
     );
+    Route::post('/uploadTestBySecretary/{record}', [MedicalTestController::class, 'uploadTestBySecretary']);
 });
-
 
 Route::post('/pay', [PaymentController::class, 'create']);
 

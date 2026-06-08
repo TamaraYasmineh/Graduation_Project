@@ -14,13 +14,13 @@ return new class extends Migration
         Schema::create('treatment_plans', function (Blueprint $table) {
             $table->id();
             $table->foreignId('medical_record_id')
-            ->unique()
-            ->constrained('medical_records')
-            ->cascadeOnDelete();
+                ->unique()
+                ->constrained('medical_records')
+                ->cascadeOnDelete();
             $table->date('session_date');
             $table->string('diagnosis');
             $table->foreignId('protocol_id')->nullable();
-            $table->text('medication')->nullable(); 
+            $table->text('medication')->nullable();
             $table->integer('duration')->nullable();
             $table->timestamps();
         });
