@@ -153,4 +153,36 @@ public function update(Treatment_plan $TreatmentPlan, array $data)
 
         return $Treatment_session;
     }
+    public function getAllTreatmentPlans()
+{
+    return Treatment_plan::all();
+}
+
+public function getTreatmentPlanById($id)
+{
+    return Treatment_plan::findOrFail($id);
+}
+
+public function deleteTreatmentPlan(Treatment_plan $treatmentPlan)
+{
+    $treatmentPlan->delete();
+
+    return true;
+}
+public function getAllTreatmentSessions()
+{
+    return Treatment_session::all();
+}
+
+public function getTreatmentSessionById($id)
+{
+    return Treatment_session::findOrFail($id);
+}
+
+public function deleteTreatmentSession(Treatment_session $treatmentSession)
+{
+    $treatmentSession->delete();
+
+    return true;
+}
 }

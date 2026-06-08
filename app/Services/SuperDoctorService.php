@@ -13,15 +13,13 @@ class SuperDoctorService
     }
     public function getAllDoctorsWithSpecialization($search = null)
     {
-        $query = Doctor::with(['user', 'schedules']);
+        $query = Doctor::with(['user', 'schedules'])
+            ->withCount('patients');
     
         if ($search) {
             $query->where(function ($q) use ($search) {
     
-                // 🔍 البحث بالاختصاص
                 $q->where('specialization', 'like', "%$search%")
-    
-                  // 🔍 البحث باسم الدكتور
                   ->orWhereHas('user', function ($q2) use ($search) {
                       $q2->where('name', 'like', "%$search%");
                   });

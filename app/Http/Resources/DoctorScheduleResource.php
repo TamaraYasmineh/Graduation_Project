@@ -14,24 +14,6 @@ class DoctorScheduleResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-        // return [
-        //     'doctor_id' => $this->id,
-        //     'name' => $this->user->name,
-        //     'email' => $this->user->email,
-        //     'phone' => $this->user->phone ?? null,
-        //     'specialization' => $this->specialization,
-        //     'experience_years' => $this->experience_years,
-        //     'bio' => $this->bio,
-        //     'image' => $this->image ?? null,
-        //     'schedules' => $this->schedules->map(function ($schedule) {
-        //         return [
-        //             'date' => $schedule->date,
-        //             'day' => Carbon::parse($schedule->date)->locale('ar')->translatedFormat('l'),
-        //             'start_time' => $schedule->start_time,
-        //             'end_time' => $schedule->end_time,
-        //         ];
-        //     })
-        // ];
         return [
             'id' => $this->id,
 
