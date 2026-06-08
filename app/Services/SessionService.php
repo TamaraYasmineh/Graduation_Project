@@ -1,8 +1,10 @@
 <?php
 
 namespace App\Services;
+
 use App\Models\Treatment_plan;
 use App\Models\Treatment_session;
+
 class SessionService
 {
     /* -----------------------------
@@ -71,18 +73,19 @@ class SessionService
         return match ($unit) {
             'g' => [
                 'dose' => round($dose / 1000, 4),
-                'unit' => 'g'
+                'unit' => 'g',
             ],
             'mcg' => [
                 'dose' => round($dose * 1000, 2),
-                'unit' => 'mcg'
+                'unit' => 'mcg',
             ],
             default => [
                 'dose' => round($dose, 2),
-                'unit' => 'mg'
+                'unit' => 'mg',
             ],
         };
     }
+
     public function storeTreatmentPlan($data)
     {
         return Treatment_plan::create([
@@ -94,34 +97,34 @@ class SessionService
             'duration' => $data['duration'] ?? null,
         ]);
     }
+
     public function storeSession($data)
-{
-    return Treatment_session::create([
+    {
+        return Treatment_session::create([
 
-        'treatment_plan_id' => $data['treatment_plan_id'],
+            'treatment_plan_id' => $data['treatment_plan_id'],
 
-        'session_date' => $data['session_date'],
+            'session_date' => $data['session_date'],
 
-        'height' => $data['height'] ?? null,
+            'height' => $data['height'] ?? null,
 
-        'weight' => $data['weight'] ?? null,
+            'weight' => $data['weight'] ?? null,
 
-        'bsa' => $data['bsa'] ?? null,
+            'bsa' => $data['bsa'] ?? null,
 
-        'dosage' => $data['dosage'] ?? null,
+            'dosage' => $data['dosage'] ?? null,
 
-        'lab_requested' => $data['lab_requested'] ?? false,
+            'lab_requested' => $data['lab_requested'] ?? false,
 
-        'lab_tests_requested' =>
-            $data['lab_tests_requested'] ?? null,
+            'lab_tests_requested' => $data['lab_tests_requested'] ?? null,
 
-        'lab_results' =>
-            $data['lab_results'] ?? null,
+            'lab_results' => $data['lab_results'] ?? null,
 
-        'notes' => $data['notes'] ?? null,
-    ]);
-}
-public function update(Treatment_plan $TreatmentPlan, array $data)
+            'notes' => $data['notes'] ?? null,
+        ]);
+    }
+
+    public function update(Treatment_plan $TreatmentPlan, array $data)
     {
         $TreatmentPlan->update([
             'medical_record_id' => $data['medical_record_id'] ?? $TreatmentPlan->medical_record_id,
@@ -131,11 +134,12 @@ public function update(Treatment_plan $TreatmentPlan, array $data)
 
             'protocol_id' => $data['protocol_id'] ?? $TreatmentPlan->protocol_id,
             'medication' => $data['medication'] ?? $TreatmentPlan->medication,
-            'duration' => $data['duration'] ?? $TreatmentPlan->duration,            
+            'duration' => $data['duration'] ?? $TreatmentPlan->duration,
         ]);
 
         return $TreatmentPlan;
     }
+
     public function updatetreatmentSession(Treatment_session $Treatment_session, array $data)
     {
         $Treatment_session->update([
@@ -148,41 +152,43 @@ public function update(Treatment_plan $TreatmentPlan, array $data)
             'lab_requested' => $data['lab_requested'] ?? $Treatment_session->lab_requested,
             'lab_tests_requested' => $data['lab_tests_requested'] ?? $Treatment_session->lab_tests_requested,
             'lab_results' => $data['lab_results'] ?? $Treatment_session->lab_results,
-            'notes' => $data['notes'] ?? $Treatment_session->notes,            
+            'notes' => $data['notes'] ?? $Treatment_session->notes,
         ]);
 
         return $Treatment_session;
     }
+
     public function getAllTreatmentPlans()
-{
-    return Treatment_plan::all();
-}
+    {
+        return Treatment_plan::all();
+    }
 
-public function getTreatmentPlanById($id)
-{
-    return Treatment_plan::findOrFail($id);
-}
+    public function getTreatmentPlanById($id)
+    {
+        return Treatment_plan::findOrFail($id);
+    }
 
-public function deleteTreatmentPlan(Treatment_plan $treatmentPlan)
-{
-    $treatmentPlan->delete();
+    public function deleteTreatmentPlan(Treatment_plan $treatmentPlan)
+    {
+        $treatmentPlan->delete();
 
-    return true;
-}
-public function getAllTreatmentSessions()
-{
-    return Treatment_session::all();
-}
+        return true;
+    }
 
-public function getTreatmentSessionById($id)
-{
-    return Treatment_session::findOrFail($id);
-}
+    public function getAllTreatmentSessions()
+    {
+        return Treatment_session::all();
+    }
 
-public function deleteTreatmentSession(Treatment_session $treatmentSession)
-{
-    $treatmentSession->delete();
+    public function getTreatmentSessionById($id)
+    {
+        return Treatment_session::findOrFail($id);
+    }
 
-    return true;
-}
+    public function deleteTreatmentSession(Treatment_session $treatmentSession)
+    {
+        $treatmentSession->delete();
+
+        return true;
+    }
 }

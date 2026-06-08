@@ -23,9 +23,9 @@ class StoreSupportRequest extends FormRequest
     public function rules(): array
     {
         return [
-        'title' => 'required|string|max:100',
-        'content' => 'required|string|max:255',
-        'image' => 'required|image|mimes:jpg,png,jpeg|max:2048',
-    ];
+            'title' => 'required|string|max:100',
+            'content' => 'required|string|max:255',
+            'image' => 'required|image|mimes:jpg,png,jpeg|max:2048',
+        ];
     }
 }

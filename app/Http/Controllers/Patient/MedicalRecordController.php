@@ -3,23 +3,19 @@
 namespace App\Http\Controllers\Patient;
 
 use App\Http\Controllers\BaseController;
-use App\Http\Controllers\Controller;
 use App\Http\Requests\BookAppointmentRequest;
 use App\Http\Requests\StoreMedicalRecordRequest;
-use App\Http\Resources\BookAppointmentResource;
-use App\Http\Resources\MedicalRecordResource;
 use App\Models\Appointment;
 use App\Models\Doctor;
 use App\Models\MedicalRecord;
+use App\Models\Order;
+use App\Models\Payment;
 use App\Models\User;
 use App\Services\BookingService;
+use App\Services\PaymeraService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Database\Eloquent\Model;
-use App\Models\Order;
-use App\Models\Payment;
-use App\Services\PaymeraService;
 
 class MedicalRecordController extends BaseController
 {
@@ -41,13 +37,13 @@ class MedicalRecordController extends BaseController
             $doctor = Doctor::query()->where('user_id', $superDoctorUser->id)->first();
             $slot = $bookingService->getFirstAvailableSlot($doctor->id);
 
-            if (!$slot) {
+            if (! $slot) {
                 return $this->sendError('لا يوجد مواعيد متاحة حالياً', [], 200);
             }
 
             $record = MedicalRecord::create([
                 'patient_id' => $user->id,
-                ...$request->validated()
+                ...$request->validated(),
             ]);
 
             //  توليد وحفظ QR Code فور إنشاء السجل
@@ -60,52 +56,51 @@ class MedicalRecordController extends BaseController
                 'start_time' => $slot['start_time'],
                 'end_time' => $slot['end_time'],
                 'status' => 'pending',
-                'session_type' => $request->session_type
+                'session_type' => $request->session_type,
             ]);
             // 3. أنشئ Order مرتبط بالموعد
             $order = Order::create([
                 'amount' => $request->amount,
                 'status' => 'pending',
                 'appointment_id' => $appointment->id,
-                'user_id' => $user->id
+                'user_id' => $user->id,
             ]);
             // 4. أنشئ Payment
 
             $payment = Payment::create([
                 'order_id' => $order->id,
                 'payment_id' => uniqid(),
-                'amount' => $order->amount
+                'amount' => $order->amount,
             ]);
             // 5. أرسل طلب الدفع لـ Paymera
             $base = config('services.payment_base_url');
             $response = $paymera->createPayment([
-                "lang" => $request->lang ?? 'ar',
-                "terminalId" => config('services.paymera.terminal_id'),
-                "amount" => $order->amount,
-                "callbackURL" => $base . "/api/payment/callback/" . $order->id,
-                "triggerURL" => $base . "/api/payment/trigger/" . $order->id,
-                "notes" => "Appointment #" . $appointment->id
+                'lang' => $request->lang ?? 'ar',
+                'terminalId' => config('services.paymera.terminal_id'),
+                'amount' => $order->amount,
+                'callbackURL' => $base.'/api/payment/callback/'.$order->id,
+                'triggerURL' => $base.'/api/payment/trigger/'.$order->id,
+                'notes' => 'Appointment #'.$appointment->id,
             ]);
 
-            if (!$response || !isset($response['ErrorCode']) || $response['ErrorCode'] != 0) {
+            if (! $response || ! isset($response['ErrorCode']) || $response['ErrorCode'] != 0) {
                 return $this->sendError('فشل في إنشاء رابط الدفع', [], 500);
             }
 
             $payment->update([
-                'payment_id' => $response['Data']['paymentId']
+                'payment_id' => $response['Data']['paymentId'],
             ]);
             // 6. أرجع رابط الدفع للمريض
 
             return $this->sendResponse([
                 'medical_record' => $record,
-                'qr_code_url'    => $record->getQrCodeUrl(),
+                'qr_code_url' => $record->getQrCodeUrl(),
                 'appointment' => $appointment,
                 'payment_url' => $response['Data']['url'],
-                'payment_id' => $payment->payment_id
+                'payment_id' => $payment->payment_id,
             ], 'تم الحجز، يرجى إتمام الدفع');
         });
     }
-
 
     public function bookAppointment(
         BookAppointmentRequest $request,
@@ -120,7 +115,7 @@ class MedicalRecordController extends BaseController
             $request->start_time
         );
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return $this->sendError($result['message']);
         }
         $appointment = $result['data'];
@@ -129,35 +124,36 @@ class MedicalRecordController extends BaseController
             'amount' => $request->amount,
             'status' => 'pending',
             'appointment_id' => $appointment->id,
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
 
         $payment = Payment::create([
             'order_id' => $order->id,
             'payment_id' => uniqid(),
-            'amount' => $order->amount
+            'amount' => $order->amount,
         ]);
         // إرسال طلب الدفع لـ Paymera
         $base = config('services.payment_base_url');
         $response = $paymera->createPayment([
-            "lang" => $request->lang ?? 'ar',
-            "terminalId" => config('services.paymera.terminal_id'),
-            "amount" => $order->amount,
-            "callbackURL" => $base . "/api/payment/callback/" . $order->id,
-            "triggerURL" => $base . "/api/payment/trigger/" . $order->id,
-            "notes" => "Appointment #" . $appointment->id
+            'lang' => $request->lang ?? 'ar',
+            'terminalId' => config('services.paymera.terminal_id'),
+            'amount' => $order->amount,
+            'callbackURL' => $base.'/api/payment/callback/'.$order->id,
+            'triggerURL' => $base.'/api/payment/trigger/'.$order->id,
+            'notes' => 'Appointment #'.$appointment->id,
         ]);
-        if (!$response || !isset($response['ErrorCode']) || $response['ErrorCode'] != 0) {
+        if (! $response || ! isset($response['ErrorCode']) || $response['ErrorCode'] != 0) {
             return $this->sendError('فشل في إنشاء رابط الدفع', [], 500);
         }
 
         $payment->update([
-            'payment_id' => $response['Data']['paymentId']
+            'payment_id' => $response['Data']['paymentId'],
         ]);
+
         return $this->sendResponse([
             'appointment' => $appointment,
             'payment_url' => $response['Data']['url'],
-            'payment_id' => $payment->payment_id
+            'payment_id' => $payment->payment_id,
         ], 'تم الحجز، يرجى إتمام الدفع');
     }
     // public function myAppointments(Request $request)
@@ -172,30 +168,27 @@ class MedicalRecordController extends BaseController
     //     return $this->sendResponse($appointments, 'My appointments');
     // }
     public function myAppointments(Request $request)
-{
-    $user = $request->user();
+    {
+        $user = $request->user();
 
-    $appointments = Appointment::with(['doctor.user', 'order.payment'])
-        ->where('patient_id', $user->id)
-        ->orderBy('date', 'desc')
-        ->get();
+        $appointments = Appointment::with(['doctor.user', 'order.payment'])
+            ->where('patient_id', $user->id)
+            ->orderBy('date', 'desc')
+            ->get();
 
+        $appointments->map(function ($appointment) {
 
-    $appointments->map(function ($appointment) {
+            $appointment->payment_id =
+                $appointment->order?->payment?->payment_id;
 
-        $appointment->payment_id =
-            $appointment->order?->payment?->payment_id;
+            return $appointment;
+        });
 
-        return $appointment;
-    });
-
-    return $this->sendResponse(
-        $appointments,
-        'My appointments'
-    );
-}
-
-
+        return $this->sendResponse(
+            $appointments,
+            'My appointments'
+        );
+    }
 
     /**
      * جلب السجل الطبي مع رابط QR Code
@@ -207,67 +200,61 @@ class MedicalRecordController extends BaseController
         $user = $request->user();
 
         $record = MedicalRecord::query()->where('patient_id', $user->id)
-            ->with(['patient.patient','medicalTests'])
+            ->with(['patient.patient', 'medicalTests'])
             ->first();
 
-        if (!$record) {
+        if (! $record) {
             return $this->sendError('لا يوجد سجل طبي لهذا المريض', [], 404);
         }
 
-        $appUrl  = rtrim(config('services.public_url'), '/');
-        $token   = urlencode($record->getScanToken());
+        $appUrl = rtrim(config('services.public_url'), '/');
+        $token = urlencode($record->getScanToken());
 
         return $this->sendResponse([
             'medical_record' => [
-                'id'                 => $record->id,
-                'patient_name'       => $record->patient->name ?? '',
-                'blood_type'         => $record->blood_type,
-                'blood_pressure'     => $record->blood_pressure,
-                'height'             => $record->height,
-                'weight'             => $record->weight,
-                'is_smoker'          => $record->is_smoker ? 'نعم' : 'لا',
-                'chronic_diseases'   => $record->chronic_diseases,
-                'allergies'          => $record->allergies,
-                'medications'        => $record->medications,
-                'surgeries'          => $record->surgeries,
-                'family_history'     => $record->family_history,
-                'marital_status'     => $record->marital_status,
+                'id' => $record->id,
+                'patient_name' => $record->patient->name ?? '',
+                'blood_type' => $record->blood_type,
+                'blood_pressure' => $record->blood_pressure,
+                'height' => $record->height,
+                'weight' => $record->weight,
+                'is_smoker' => $record->is_smoker ? 'نعم' : 'لا',
+                'chronic_diseases' => $record->chronic_diseases,
+                'allergies' => $record->allergies,
+                'medications' => $record->medications,
+                'surgeries' => $record->surgeries,
+                'family_history' => $record->family_history,
+                'marital_status' => $record->marital_status,
                 'number_of_children' => $record->number_of_children,
-                'notes'              => $record->notes,
+                'notes' => $record->notes,
                 'email' => $record->patient->email ?? '',
                 'phone' => $record->patient->phone ?? '',
                 'gender' => $record->patient->gender ?? '',
 
                 'profile_image' => $record->patient->profile_image
-                    ? asset('storage/' . $record->patient->profile_image)
+                    ? asset('storage/'.$record->patient->profile_image)
                     : null,
-                'date_of_birth' =>
-                optional($record->patient->patient)->date_of_birth,
+                'date_of_birth' => optional($record->patient->patient)->date_of_birth,
 
-                'age' =>
-                optional($record->patient->patient)->date_of_birth
+                'age' => optional($record->patient->patient)->date_of_birth
                     ? Carbon::parse(
                         $record->patient->patient->date_of_birth
                     )->age
                     : null,
 
-                'country' =>
-                optional($record->patient->patient)->country,
+                'country' => optional($record->patient->patient)->country,
 
-                'city' =>
-                optional($record->patient->patient)->city,
+                'city' => optional($record->patient->patient)->city,
 
-                'address' =>
-                optional($record->patient->patient)->country .
-                    ' - ' .
+                'address' => optional($record->patient->patient)->country.
+                    ' - '.
                     optional($record->patient->patient)->city,
 
-                'emergency_contact' =>
-                optional($record->patient->patient)->emergency_contact,
+                'emergency_contact' => optional($record->patient->patient)->emergency_contact,
 
             ],
             'qr_code_url' => $record->getQrCodeUrl(),
-            'scan_url'    => $appUrl . '/scan?token=' . $token,
+            'scan_url' => $appUrl.'/scan?token='.$token,
         ], 'تم جلب السجل الطبي مع QR Code');
     }
 
@@ -284,58 +271,52 @@ class MedicalRecordController extends BaseController
 
             $record = MedicalRecord::query()->where('id', $recordId)
                 ->where('patient_id', $patientId)
-                ->with(['patient.patient','medicalTests'])
+                ->with(['patient.patient', 'medicalTests'])
                 ->first();
 
-            if (!$record) {
+            if (! $record) {
                 return $this->sendError('السجل الطبي غير موجود', [], 404);
             }
 
             return $this->sendResponse([
-                'patient_name'       => $record->patient->name ?? '',
-                'blood_type'         => $record->blood_type,
-                'blood_pressure'     => $record->blood_pressure,
-                'height'             => $record->height . ' سم',
-                'weight'             => $record->weight . ' كغ',
-                'is_smoker'          => $record->is_smoker ? 'نعم' : 'لا',
-                'chronic_diseases'   => $record->chronic_diseases,
-                'allergies'          => $record->allergies,
-                'medications'        => $record->medications,
-                'surgeries'          => $record->surgeries,
-                'family_history'     => $record->family_history,
-                'marital_status'     => $record->marital_status,
+                'patient_name' => $record->patient->name ?? '',
+                'blood_type' => $record->blood_type,
+                'blood_pressure' => $record->blood_pressure,
+                'height' => $record->height.' سم',
+                'weight' => $record->weight.' كغ',
+                'is_smoker' => $record->is_smoker ? 'نعم' : 'لا',
+                'chronic_diseases' => $record->chronic_diseases,
+                'allergies' => $record->allergies,
+                'medications' => $record->medications,
+                'surgeries' => $record->surgeries,
+                'family_history' => $record->family_history,
+                'marital_status' => $record->marital_status,
                 'number_of_children' => $record->number_of_children,
-                'notes'              => $record->notes,
-                   'email' => $record->patient->email ?? '',
+                'notes' => $record->notes,
+                'email' => $record->patient->email ?? '',
                 'phone' => $record->patient->phone ?? '',
                 'gender' => $record->patient->gender ?? '',
 
                 'profile_image' => $record->patient->profile_image
-                    ? asset('storage/' . $record->patient->profile_image)
+                    ? asset('storage/'.$record->patient->profile_image)
                     : null,
-                'date_of_birth' =>
-                optional($record->patient->patient)->date_of_birth,
+                'date_of_birth' => optional($record->patient->patient)->date_of_birth,
 
-                'age' =>
-                optional($record->patient->patient)->date_of_birth
+                'age' => optional($record->patient->patient)->date_of_birth
                     ? Carbon::parse(
                         $record->patient->patient->date_of_birth
                     )->age
                     : null,
 
-                'country' =>
-                optional($record->patient->patient)->country,
+                'country' => optional($record->patient->patient)->country,
 
-                'city' =>
-                optional($record->patient->patient)->city,
+                'city' => optional($record->patient->patient)->city,
 
-                'address' =>
-                optional($record->patient->patient)->country .
-                    ' - ' .
+                'address' => optional($record->patient->patient)->country.
+                    ' - '.
                     optional($record->patient->patient)->city,
 
-                'emergency_contact' =>
-                optional($record->patient->patient)->emergency_contact,
+                'emergency_contact' => optional($record->patient->patient)->emergency_contact,
 
             ], 'بيانات السجل الطبي');
         } catch (\Exception $e) {
@@ -355,7 +336,7 @@ class MedicalRecordController extends BaseController
 
             $record = MedicalRecord::query()->where('id', $recordId)
                 ->where('patient_id', $patientId)
-                ->with(['patient.patient','medicalTests'])
+                ->with(['patient.patient', 'medicalTests'])
                 ->firstOrFail();
 
             return view('medical-records.scan-result', compact('record'));
@@ -363,14 +344,15 @@ class MedicalRecordController extends BaseController
             abort(400, 'QR Code غير صالح');
         }
     }
+
     public function storeMedicalRecordBySecretary(
         StoreMedicalRecordRequest $request,
         BookingService $bookingService
     ) {
         return DB::transaction(function () use ($request, $bookingService) {
-    
+
             $patient = User::findOrFail($request->patient_id);
-    
+
             if ($patient->medicalRecord) {
                 return $this->sendError(
                     'Medical record already exists',
@@ -378,93 +360,95 @@ class MedicalRecordController extends BaseController
                     400
                 );
             }
-    
+
             $superDoctorUser = User::role('super_doctor')->first();
-    
-            if (!$superDoctorUser) {
+
+            if (! $superDoctorUser) {
                 return $this->sendError(
                     'Super doctor not found',
                     [],
                     404
                 );
             }
-    
+
             $doctor = Doctor::where(
                 'user_id',
                 $superDoctorUser->id
             )->first();
-    
+
             $slot = $bookingService->getFirstAvailableSlot($doctor->id);
-    
-            if (!$slot) {
+
+            if (! $slot) {
                 return $this->sendError(
                     'لا يوجد مواعيد متاحة حالياً',
                     [],
                     200
                 );
             }
-    
+
             $record = MedicalRecord::create([
                 'patient_id' => $patient->id,
-                ...$request->validated()
+                ...$request->validated(),
             ]);
-    
+
             // إنشاء QR
             $record->generateAndSaveQrCode();
-    
+
             $appointment = Appointment::create([
-                'doctor_id'    => $doctor->id,
-                'patient_id'   => $patient->id,
-                'date'         => $slot['date'],
-                'start_time'   => $slot['start_time'],
-                'end_time'     => $slot['end_time'],
-                'status'       => 'pending',
+                'doctor_id' => $doctor->id,
+                'patient_id' => $patient->id,
+                'date' => $slot['date'],
+                'start_time' => $slot['start_time'],
+                'end_time' => $slot['end_time'],
+                'status' => 'pending',
                 'session_type' => $request->session_type,
             ]);
             $order = Order::create([
                 'amount' => $request->amount,
                 'status' => 'pending', // بانتظار الدفع اليدوي
                 'appointment_id' => $appointment->id,
-                'user_id' => $patient->id
+                'user_id' => $patient->id,
             ]);
+
             return $this->sendResponse([
                 'medical_record' => $record,
-                'qr_code_url'    => $record->getQrCodeUrl(),
-                'appointment'    => $appointment,
-                'order'          => $order
+                'qr_code_url' => $record->getQrCodeUrl(),
+                'appointment' => $appointment,
+                'order' => $order,
             ], 'تم إنشاء الأضبارة وتحويلها للسوبر دكتور');
         });
     }
+
     public function bookAppointmentBySecretary(
         BookAppointmentRequest $request,
         BookingService $service
     ) {
-    
+
         $patient = User::findOrFail($request->patient_id);
-    
+
         $result = $service->book(
             $patient,
             $request->doctor_id,
             $request->date,
             $request->start_time
         );
-    
-        if (!$result['success']) {
+
+        if (! $result['success']) {
             return $this->sendError($result['message']);
         }
-    
+
         $appointment = $result['data'];
-    
+
         $order = Order::create([
             'amount' => $request->amount,
             'status' => 'pending', // الدفع اليدوي لم يتم بعد
             'appointment_id' => $appointment->id,
-            'user_id' => $patient->id
+            'user_id' => $patient->id,
         ]);
-    
+
         return $this->sendResponse([
             'appointment' => $appointment,
-            'order' => $order
+            'order' => $order,
         ], 'تم الحجز بنجاح وسيتم الدفع يدوياً');
     }
 }

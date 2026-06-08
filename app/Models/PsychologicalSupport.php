@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -10,9 +11,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $content
  * @property string $image
  * @property int $created_by
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\User $creator
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read User $creator
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PsychologicalSupport newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PsychologicalSupport newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PsychologicalSupport query()
@@ -23,6 +25,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PsychologicalSupport whereImage($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PsychologicalSupport whereTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|PsychologicalSupport whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class PsychologicalSupport extends Model

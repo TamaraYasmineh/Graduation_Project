@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('schedules', function (Blueprint $table) {
             $table->id();
             $table->foreignId('doctor_id')
-              ->constrained()
+                ->constrained()
                 ->cascadeOnDelete();
             $table->date('date');
             $table->time('start_time');

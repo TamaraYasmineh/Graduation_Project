@@ -20,12 +20,12 @@ class ScheduleResource extends JsonResource
             'start_time' => $this->start_time,
             'end_time' => $this->end_time,
             'slot_duration' => $this->slot_duration,
-    
+
             'doctor' => [
                 'id' => $this->doctor->id,
                 'name' => $this->doctor->user->name,
                 'specialization' => $this->doctor->specialization,
-            ]
+            ],
         ];
     }
 }

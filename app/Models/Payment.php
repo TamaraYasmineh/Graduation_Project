@@ -13,7 +13,7 @@ class Payment extends Model
         'status',
         'rrn',
         'paid_at',
-        'raw_response'
+        'raw_response',
     ];
 
     protected $casts = [
@@ -21,18 +21,18 @@ class Payment extends Model
         'paid_at' => 'datetime',
     ];
 
-
     public function order()
     {
         return $this->belongsTo(Order::class);
     }
+
     public function markSuccess($rrn, $response)
     {
         $this->update([
             'status' => 'A',
             'rrn' => $rrn,
             'paid_at' => now(),
-            'raw_response' => $response
+            'raw_response' => $response,
         ]);
 
         $this->order->markAccepted();
@@ -42,7 +42,7 @@ class Payment extends Model
     {
         $this->update([
             'status' => 'F',
-            'raw_response' => $response
+            'raw_response' => $response,
         ]);
 
         $this->order->markFailed();
@@ -61,16 +61,16 @@ class Payment extends Model
     {
         $this->update([
             'status' => 'C',
-            'raw_response' => $response
+            'raw_response' => $response,
         ]);
-    
+
         // حمّل العلاقات بشكل صريح
         $this->load('order.appointment');
-    
+
         $this->order?->update(['status' => 'canceled']);
-    
+
         $this->order?->appointment?->update([
-            'status' => 'cancelled'
+            'status' => 'cancelled',
         ]);
     }
 }

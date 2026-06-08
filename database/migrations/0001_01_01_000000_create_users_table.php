@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('phone')->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->enum('gender',['male', 'female'])->nullable();;
+            $table->enum('gender', ['male', 'female'])->nullable();
             $table->enum('status', ['pending', 'approved', 'rejected'])->default('pending');
             $table->boolean('is_active')->default(false);
             $table->string('profile_image')->nullable();

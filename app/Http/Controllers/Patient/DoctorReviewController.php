@@ -2,22 +2,22 @@
 
 namespace App\Http\Controllers\Patient;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 use App\Http\Controllers\BaseController;
 use App\Models\Doctor;
 use App\Models\DoctorReview;
+use Illuminate\Http\Request;
+
 class DoctorReviewController extends BaseController
 {
-     // =========================
+    // =========================
     // 1. إضافة تقييم
     // =========================
     public function addReview(Request $request)
     {
         $request->validate([
             'doctor_id' => 'required|exists:doctors,id',
-            'rating'    => 'required|integer|min:1|max:5',
-            'comment'   => 'nullable|string',
+            'rating' => 'required|integer|min:1|max:5',
+            'comment' => 'nullable|string',
         ]);
 
         $patient = $request->user();
@@ -32,10 +32,10 @@ class DoctorReviewController extends BaseController
         }
 
         $review = DoctorReview::create([
-            'doctor_id'  => $request->doctor_id,
+            'doctor_id' => $request->doctor_id,
             'patient_id' => $patient->id,
-            'rating'     => $request->rating,
-            'comment'    => $request->comment,
+            'rating' => $request->rating,
+            'comment' => $request->comment,
         ]);
 
         return $this->sendResponse($review, 'تم إضافة التقييم بنجاح');
@@ -47,26 +47,26 @@ class DoctorReviewController extends BaseController
     public function updateReview(Request $request, $id)
     {
         $request->validate([
-        'rating'  => 'sometimes|integer|min:1|max:5',
-        'comment' => 'nullable|string',
-    ]);
+            'rating' => 'sometimes|integer|min:1|max:5',
+            'comment' => 'nullable|string',
+        ]);
 
-    $review = DoctorReview::query()->where('id', $id)->first();
+        $review = DoctorReview::query()->where('id', $id)->first();
 
-    if (!$review) {
-        return $this->sendError('التقييم غير موجود', [], 404);
-    }
+        if (! $review) {
+            return $this->sendError('التقييم غير موجود', [], 404);
+        }
 
-    $user = $request->user();
+        $user = $request->user();
 
-    //  فقط المريض صاحب التقييم أو super_doctor
-    if ($review->patient_id !== $user->id && !$user->hasRole('super_doctor')) {
-        return $this->sendError('غير مصرح لك بتعديل هذا التقييم', [], 403);
-    }
+        //  فقط المريض صاحب التقييم أو super_doctor
+        if ($review->patient_id !== $user->id && ! $user->hasRole('super_doctor')) {
+            return $this->sendError('غير مصرح لك بتعديل هذا التقييم', [], 403);
+        }
 
-    $review->update($request->only(['rating', 'comment']));
+        $review->update($request->only(['rating', 'comment']));
 
-    return $this->sendResponse($review, 'تم تعديل التقييم بنجاح');
+        return $this->sendResponse($review, 'تم تعديل التقييم بنجاح');
     }
 
     // =========================
@@ -74,22 +74,22 @@ class DoctorReviewController extends BaseController
     // =========================
     public function deleteReview(Request $request, $id)
     {
-     $review = DoctorReview::query()->where('id', $id)->first();
+        $review = DoctorReview::query()->where('id', $id)->first();
 
-    if (!$review) {
-        return $this->sendError('التقييم غير موجود', [], 404);
-    }
+        if (! $review) {
+            return $this->sendError('التقييم غير موجود', [], 404);
+        }
 
-    $user = $request->user();
+        $user = $request->user();
 
-    //  فقط المريض صاحب التقييم أو super_doctor
-    if ($review->patient_id !== $user->id && !$user->hasRole('super_doctor')) {
-        return $this->sendError('غير مصرح لك بحذف هذا التقييم', [], 403);
-    }
+        //  فقط المريض صاحب التقييم أو super_doctor
+        if ($review->patient_id !== $user->id && ! $user->hasRole('super_doctor')) {
+            return $this->sendError('غير مصرح لك بحذف هذا التقييم', [], 403);
+        }
 
-    $review->delete();
+        $review->delete();
 
-    return $this->sendResponse(null, 'تم حذف التقييم بنجاح');
+        return $this->sendResponse(null, 'تم حذف التقييم بنجاح');
     }
 
     // =========================
@@ -97,28 +97,28 @@ class DoctorReviewController extends BaseController
     // =========================
     public function getDoctorReviews($doctorId)
     {
-        $doctor = Doctor::find($doctorId);
+        $doctor = Doctor::query()->find($doctorId);
 
-        if (!$doctor) {
+        if (! $doctor) {
             return $this->sendError('الطبيب غير موجود', [], 404);
         }
 
-       $reviews = DoctorReview::where('doctor_id', $doctorId)
-    ->with('patient:id,name,profile_image')
-    ->latest()
-    ->get()
-    ->map(function ($review) {
-        $review->patient->profile_image = $review->patient->profile_image
-            ? asset('storage/' . $review->patient->profile_image)
-            : null;
-        return $review;
-    });
+        $reviews = DoctorReview::where('doctor_id', $doctorId)
+            ->with('patient:id,name,profile_image')
+            ->latest()
+            ->get()
+            ->map(function ($review) {
+                $review->patient->profile_image = $review->patient->profile_image
+                    ? asset('storage/'.$review->patient->profile_image)
+                    : null;
+
+                return $review;
+            });
 
         return $this->sendResponse([
             'average_rating' => $doctor->calculateAverageRating(),
-            'total_reviews'  => $reviews->count(),
-            'reviews'        => $reviews,
+            'total_reviews' => $reviews->count(),
+            'reviews' => $reviews,
         ], 'Doctor Reviews');
     }
-
 }

@@ -25,15 +25,15 @@ class CalculateBsaRequest extends FormRequest
         return [
             'weight' => 'required|numeric|min:1',
             'weight_unit' => 'required|in:kg,lbs',
-    
+
             'height' => 'required|numeric|min:1',
             'height_unit' => 'required|in:cm,m,in',
-    
+
             'bsa_based_dose' => 'required|numeric|min:0.1',
             'dose_unit' => 'required|in:mg/m2,g/m2,mcg/m2',
-    
+
             'formula' => 'required|in:mosteller,dubois',
-    
+
             'desired_unit' => 'required|in:mg,g,mcg',
         ];
     }

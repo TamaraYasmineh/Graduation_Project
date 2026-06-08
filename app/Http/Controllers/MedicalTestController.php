@@ -7,7 +7,6 @@ use App\Http\Resources\MedicalTestResource;
 use App\Models\MedicalRecord;
 use App\Models\MedicalTest;
 use App\Services\MedicalTestService;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class MedicalTestController extends Controller
@@ -21,18 +20,18 @@ class MedicalTestController extends Controller
 
     public function uploadMedicalTest(MedicalTestRequest $request)
     {
-        if (!Auth::user()->hasRole('patient')) {
-    return response()->json([
-        'status' => false,
-        'message' => 'غير مصرح'
-    ], 403);
-}
-        $user = Auth::user();
-
-        if (!$user->medicalRecord) {
+        if (! Auth::user()->hasRole('patient')) {
             return response()->json([
                 'status' => false,
-                'message' => 'لا يوجد سجل طبي للمريض'
+                'message' => 'غير مصرح',
+            ], 403);
+        }
+        $user = Auth::user();
+
+        if (! $user->medicalRecord) {
+            return response()->json([
+                'status' => false,
+                'message' => 'لا يوجد سجل طبي للمريض',
             ], 422);
         }
 
@@ -44,46 +43,47 @@ class MedicalTestController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'Uploaded successfully',
-            'data' => MedicalTestResource::collection($tests)
+            'data' => MedicalTestResource::collection($tests),
         ]);
     }
-     /**
+
+    /**
      * السكرتيرة ترفع لمريض محدد
      */
     public function uploadTestBySecretary(
         MedicalTestRequest $request,
-          $recordId
+        $recordId
     ) {
- if (!Auth::user()->hasRole('secretary')) {
+        if (! Auth::user()->hasRole('secretary')) {
+            return response()->json([
+                'status' => false,
+                'message' => 'غير مصرح',
+            ], 403);
+        }
+
+        if (empty($recordId)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'معرف السجل الطبي مطلوب',
+            ], 422);
+        }
+
+        $record = MedicalRecord::query()->find($recordId);
+
+        if (! $record) {
+            return response()->json([
+                'status' => false,
+                'message' => 'لا يوجد سجل طبي بهذا الرقم',
+            ], 404);
+        }
+
+        $tests = $this->service->upload($request, $record);
+
         return response()->json([
-            'status' => false,
-            'message' => 'غير مصرح'
-        ], 403);
-    }
-
-    if (empty($recordId)) {
-        return response()->json([
-            'status' => false,
-            'message' => 'معرف السجل الطبي مطلوب'
-        ], 422);
-    }
-
-    $record = MedicalRecord::query()->find($recordId);
-
-    if (!$record) {
-        return response()->json([
-            'status' => false,
-            'message' => 'لا يوجد سجل طبي بهذا الرقم'
-        ], 404);
-    }
-
-    $tests = $this->service->upload($request, $record);
-
-    return response()->json([
-        'status' => true,
-        'message' => 'Uploaded successfully',
-        'data' => MedicalTestResource::collection($tests)
-    ]);
+            'status' => true,
+            'message' => 'Uploaded successfully',
+            'data' => MedicalTestResource::collection($tests),
+        ]);
     }
 
     public function getPatientMedicalTests($id)
@@ -106,7 +106,7 @@ class MedicalTestController extends Controller
 
         return response()->json([
             'status' => true,
-            'message' => 'Deleted successfully'
+            'message' => 'Deleted successfully',
         ]);
     }
 
@@ -114,9 +114,9 @@ class MedicalTestController extends Controller
     {
         $test = MedicalTest::findOrFail($id);
 
-        $path = storage_path('app/public/' . $test->file_path);
+        $path = storage_path('app/public/'.$test->file_path);
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             abort(404);
         }
 
@@ -124,8 +124,6 @@ class MedicalTestController extends Controller
             $path,
             basename($path)
         );
-
-
 
         // $test = MedicalTest::findOrFail($id);
 
@@ -136,7 +134,6 @@ class MedicalTestController extends Controller
         //     'exists' => file_exists(storage_path('app/public/' . $test->file_path)),
         // ]);
 
-
         // return response()->json([
         //     'id' => $test->id,
         //     'path' => $path,
@@ -144,13 +141,14 @@ class MedicalTestController extends Controller
         //     'size' => filesize($path),
         // ]);
     }
+
     public function viewMedicalTest($id)
     {
         $test = MedicalTest::findOrFail($id);
 
-        $path = storage_path('app/public/' . $test->file_path);
+        $path = storage_path('app/public/'.$test->file_path);
 
-        if (!file_exists($path)) {
+        if (! file_exists($path)) {
             abort(404);
         }
 

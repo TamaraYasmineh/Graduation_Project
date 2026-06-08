@@ -22,7 +22,7 @@ class UpdateCenterInfoRequest extends FormRequest
      */
     public function rules(): array
     {
-      return [
+        return [
             'location' => 'sometimes|string|max:255',
             'opening_hours' => 'sometimes|string|max:255',
             'address_on_map' => 'sometimes|string',

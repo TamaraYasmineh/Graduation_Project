@@ -8,8 +8,8 @@ class MedicalTest extends Model
 {
     protected $fillable = [
         'medical_record_id',
-        'uploadable_id',        
-        'uploadable_type',      
+        'uploadable_id',
+        'uploadable_type',
         'file_path',
         'file_type',
         'test_type',
@@ -27,5 +27,4 @@ class MedicalTest extends Model
     {
         return $this->morphTo();
     }
-
 }

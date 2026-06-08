@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Models;
+
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
@@ -13,7 +14,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $emergency_contact
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\User $user
+ * @property-read User $user
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Patient newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Patient newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Patient query()
@@ -25,6 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Patient whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Patient whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Patient whereUserId($value)
+ *
  * @mixin \Eloquent
  */
 class Patient extends Model
@@ -36,14 +39,17 @@ class Patient extends Model
         'city',
         'emergency_contact',
     ];
+
     public function getAgeAttribute()
     {
-     return Carbon::parse($this->date_of_birth)->age;
+        return Carbon::parse($this->date_of_birth)->age;
     }
+
     public function user()
     {
         return $this->belongsTo(User::class);
     }
+
     public function medicalTests()
     {
         return $this->morphMany(MedicalTest::class, 'uploadable');

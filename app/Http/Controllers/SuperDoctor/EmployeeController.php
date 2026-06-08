@@ -8,7 +8,6 @@ use App\Http\Requests\UpdateEmployeeRequest;
 use App\Http\Resources\EmployeeResource;
 use App\Models\Employee;
 use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -26,7 +25,7 @@ class EmployeeController extends Controller
         DB::beginTransaction();
 
         $profileImagePath = null;
-        $degreeImagePath  = null;
+        $degreeImagePath = null;
 
         try {
             $validated = $request->validated();
@@ -51,14 +50,14 @@ class EmployeeController extends Controller
             // 3) إنشاء User
             // ------------------------------------------------
             $user = User::create([
-                'name'          => $validated['name'],
-                'email'         => $validated['email'],
-                'phone'         => $validated['phone'],
-                'gender'        => $validated['gender'],
+                'name' => $validated['name'],
+                'email' => $validated['email'],
+                'phone' => $validated['phone'],
+                'gender' => $validated['gender'],
                 'profile_image' => $profileImagePath,
-                'password'      => Hash::make(Str::random(16)),
-                'status'        => 'approved',
-                'is_active'     => true,
+                'password' => Hash::make(Str::random(16)),
+                'status' => 'approved',
+                'is_active' => true,
             ]);
 
             // تعيين الدور عبر Spatie
@@ -68,18 +67,18 @@ class EmployeeController extends Controller
             // 4) إنشاء Employee
             // ------------------------------------------------
             $employee = Employee::create([
-                'user_id'          => $user->id,
-                'role'             => $validated['role'],
+                'user_id' => $user->id,
+                'role' => $validated['role'],
                 'date_of_birth' => $validated['date_of_birth'],
-                'phone2'          => $validated['phone2']          ?? null,
-                'academic_degree'  => $validated['academic_degree'],
-                'degree_image'     => $degreeImagePath,
-                'work_history'     => $validated['work_history']     ?? null,
+                'phone2' => $validated['phone2'] ?? null,
+                'academic_degree' => $validated['academic_degree'],
+                'degree_image' => $degreeImagePath,
+                'work_history' => $validated['work_history'] ?? null,
                 'chronic_diseases' => $validated['chronic_diseases'] ?? null,
-                'marital_status'   => $validated['marital_status'],
-                'bank_account'     => $validated['bank_account']     ?? null,
+                'marital_status' => $validated['marital_status'],
+                'bank_account' => $validated['bank_account'] ?? null,
                 'sham_cash_number' => $validated['sham_cash_number'] ?? null,
-                'salary'           => $validated['salary'],
+                'salary' => $validated['salary'],
                 'shift' => $validated['shift'],
                 'work_days' => $validated['work_days'],
             ]);
@@ -89,19 +88,23 @@ class EmployeeController extends Controller
             return response()->json([
                 'success' => true,
                 'message' => 'تم إضافة الموظف بنجاح.',
-                'data'    => new EmployeeResource($employee->load('user')),
+                'data' => new EmployeeResource($employee->load('user')),
             ], 201);
         } catch (\Throwable $e) {
             DB::rollBack();
 
             // حذف الصور إن رُفعت قبل الخطأ
-            if ($profileImagePath) Storage::disk('public')->delete($profileImagePath);
-            if ($degreeImagePath)  Storage::disk('public')->delete($degreeImagePath);
+            if ($profileImagePath) {
+                Storage::disk('public')->delete($profileImagePath);
+            }
+            if ($degreeImagePath) {
+                Storage::disk('public')->delete($degreeImagePath);
+            }
 
             return response()->json([
                 'success' => false,
                 'message' => 'حدث خطأ أثناء إضافة الموظف.',
-                'error'   => config('app.debug') ? $e->getMessage() : null,
+                'error' => config('app.debug') ? $e->getMessage() : null,
             ], 500);
         }
     }
@@ -114,8 +117,8 @@ class EmployeeController extends Controller
 
         return response()->json([
             'success' => true,
-            'count'   => $employees->count(),
-            'data'    => EmployeeResource::collection($employees),
+            'count' => $employees->count(),
+            'data' => EmployeeResource::collection($employees),
         ]);
     }
 
@@ -123,7 +126,7 @@ class EmployeeController extends Controller
     {
         $employee = Employee::with('user')->find($id);
 
-        if (!$employee) {
+        if (! $employee) {
             return response()->json([
                 'success' => false,
                 'message' => 'الموظف غير موجود.',
@@ -187,7 +190,7 @@ class EmployeeController extends Controller
                 'email',
                 'phone',
                 'gender',
-                'profile_image'
+                'profile_image',
             ])->toArray();
 
             // تحديث صورة الشهادة

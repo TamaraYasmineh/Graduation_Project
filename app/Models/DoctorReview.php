@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class DoctorReview extends Model
 {
-     protected $fillable = [
+    protected $fillable = [
         'doctor_id',
         'patient_id',
         'rating',

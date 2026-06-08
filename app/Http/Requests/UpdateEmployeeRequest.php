@@ -35,7 +35,7 @@ class UpdateEmployeeRequest extends FormRequest
                 'nullable',
                 'image',
                 'mimes:jpg,jpeg,png',
-                'max:3072'
+                'max:3072',
             ],
 
             // ---- employees ----
@@ -44,7 +44,7 @@ class UpdateEmployeeRequest extends FormRequest
             'date_of_birth' => [
                 'sometimes',
                 'date',
-                'before:today'
+                'before:today',
             ],
 
             'phone2' => ['nullable', 'string', 'max:20'],
@@ -55,7 +55,7 @@ class UpdateEmployeeRequest extends FormRequest
                 'nullable',
                 'file',
                 'mimes:jpg,jpeg,png,pdf',
-                'max:5120'
+                'max:5120',
             ],
 
             'work_history' => ['nullable', 'string'],
@@ -64,7 +64,7 @@ class UpdateEmployeeRequest extends FormRequest
 
             'marital_status' => [
                 'sometimes',
-                'in:single,married,divorced,widowed'
+                'in:single,married,divorced,widowed',
             ],
 
             'bank_account' => ['nullable', 'string', 'max:50'],
@@ -78,7 +78,7 @@ class UpdateEmployeeRequest extends FormRequest
             'work_days' => ['sometimes', 'array'],
 
             'work_days.*' => [
-                'in:sunday,monday,tuesday,wednesday,thursday,friday,saturday'
+                'in:sunday,monday,tuesday,wednesday,thursday,friday,saturday',
             ],
         ];
     }

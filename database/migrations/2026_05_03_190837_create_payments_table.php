@@ -20,7 +20,7 @@ return new class extends Migration
                 'P', // pending
                 'A', // accepted
                 'F', // failed
-                'C'  // canceled
+                'C',  // canceled
             ])->default('P');
             $table->string('rrn')->nullable();
             $table->timestamp('paid_at')->nullable();

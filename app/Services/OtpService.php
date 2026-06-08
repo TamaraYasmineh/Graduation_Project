@@ -2,33 +2,32 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Hash;
 use App\Mail\UserLoginOtp;
 use App\Models\User;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class OtpService
 {
-
     public function send($email)
     {
 
-        if (Cache::has('otp_block_' . $email)) {
+        if (Cache::has('otp_block_'.$email)) {
             return $this->error('Account temporarily locked', 403);
         }
-        if (Cache::has('otp_cooldown_' . $email)) {
+        if (Cache::has('otp_cooldown_'.$email)) {
             return $this->error('Wait before requesting OTP', 429);
         }
 
         $otp = rand(100000, 999999);
 
-        Cache::put('otp_data_' . $email, [
+        Cache::put('otp_data_'.$email, [
             'code' => Hash::make($otp),
             'attempts' => 0,
         ], now()->addMinutes(10));
 
-        Cache::put('otp_cooldown_' . $email, true, now()->addSeconds(60));
+        Cache::put('otp_cooldown_'.$email, true, now()->addSeconds(60));
 
         Mail::to($email)->queue(new UserLoginOtp($otp));
 
@@ -37,28 +36,28 @@ class OtpService
 
     public function verify($email, $code)
     {
-        $key = 'otp_data_' . $email;
+        $key = 'otp_data_'.$email;
 
         $otpData = Cache::get($key);
 
-        if (!$otpData) {
+        if (! $otpData) {
             return $this->error('OTP expired', 422);
         }
 
         if ($otpData['attempts'] >= 5) {
             Cache::forget($key);
-            Cache::put('otp_block_' . $email, true, now()->addMinutes(15));
+            Cache::put('otp_block_'.$email, true, now()->addMinutes(15));
 
             return $this->error('Too many attempts, account locked', 429);
         }
 
-        if (!Hash::check($code, $otpData['code'])) {
+        if (! Hash::check($code, $otpData['code'])) {
             $otpData['attempts']++;
 
             Cache::put($key, $otpData, now()->addMinutes(10));
 
             return $this->error('Invalid OTP', 422, [
-                'remaining_attempts' => 5 - $otpData['attempts']
+                'remaining_attempts' => 5 - $otpData['attempts'],
             ]);
         }
 
@@ -70,17 +69,17 @@ class OtpService
 
         return $this->success('OTP verified', [
             'token' => $token,
-            'user' => $user
+            'user' => $user,
         ]);
     }
 
     public function resend($email)
     {
-        if (Cache::has('otp_cooldown_' . $email)) {
+        if (Cache::has('otp_cooldown_'.$email)) {
             return $this->error('Wait before resend', 429);
         }
 
-        if (!Cache::has('otp_data_' . $email)) {
+        if (! Cache::has('otp_data_'.$email)) {
             return $this->error('No OTP request found', 404);
         }
 
@@ -92,7 +91,7 @@ class OtpService
         return [
             'status' => true,
             'message' => $message,
-            'data' => $data
+            'data' => $data,
         ];
     }
 
@@ -102,7 +101,7 @@ class OtpService
             'status' => false,
             'message' => $message,
             'code' => $code,
-            'data' => $extra
+            'data' => $extra,
         ];
     }
 }

@@ -3,12 +3,10 @@
 namespace App\Http\Controllers\Doctor;
 
 use App\Http\Controllers\BaseController;
-use App\Http\Controllers\Controller;
 use App\Http\Requests\GetAvailableAppointmentsRequest;
 use App\Http\Resources\AppointmentResource;
 use App\Http\Resources\AvailableAppointmentResource;
 use App\Models\Appointment;
-use App\Models\Schedule;
 use App\Services\AvailableAppointmentService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -37,25 +35,24 @@ class AppointmentController extends BaseController
 
             $query->whereBetween('date', [
                 Carbon::now()->startOfWeek(),
-                Carbon::now()->endOfWeek()
+                Carbon::now()->endOfWeek(),
             ]);
 
         } elseif ($type === 'monthly') {
 
             $query->whereMonth('date', Carbon::now()->month)
-                  ->whereYear('date', Carbon::now()->year);
+                ->whereYear('date', Carbon::now()->year);
         }
-       $appointments = $query->orderBy('date')
-                     ->orderBy('start_time')
-                     ->get();
+        $appointments = $query->orderBy('date')
+            ->orderBy('start_time')
+            ->get();
 
-return response()->json([
-    'success' => true,
-    'type' => $type,
-   // 'appointments' => AppointmentResource::collection($appointments)
-]);
+        return response()->json([
+            'success' => true,
+            'type' => $type,
+            // 'appointments' => AppointmentResource::collection($appointments)
+        ]);
     }
-
 
     public function getAvailableAppointments(
         GetAvailableAppointmentsRequest $request,
@@ -66,7 +63,7 @@ return response()->json([
             $request->date
         );
 
-        if (!$result['success']) {
+        if (! $result['success']) {
             return $this->sendError(
                 $result['message'],
                 [],
@@ -79,6 +76,7 @@ return response()->json([
             'Available appointments fetched successfully'
         );
     }
+
     public function getGroupedAppointments($doctor_id)
     {
         $appointments = Appointment::query()->where('doctor_id', $doctor_id)
@@ -89,26 +87,23 @@ return response()->json([
 
         return $this->sendResponse($appointments, 'Doctor appointments grouped');
     }
-public function updateStatus(Request $request, $id)
-{
-    $request->validate([
-        'status' => 'required|in:pending,confirmed,cancelled,completed'
-    ]);
 
-    $appointment = Appointment::find($id);
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:pending,confirmed,cancelled,completed',
+        ]);
 
-    if (!$appointment) {
-        return $this->sendError('Appointment not found', [], 404);
+        $appointment = Appointment::query()->find($id);
+
+        if (! $appointment) {
+            return $this->sendError('Appointment not found', [], 404);
+        }
+
+        $appointment->update([
+            'status' => $request->status,
+        ]);
+
+        return $this->sendResponse($appointment, 'Status updated successfully');
     }
-
-    $appointment->update([
-        'status' => $request->status
-    ]);
-
-    return $this->sendResponse($appointment, 'Status updated successfully');
 }
-    }
-
-
-
-

@@ -14,12 +14,10 @@ return new class extends Migration
         Schema::create('medical_records', function (Blueprint $table) {
             $table->id();
 
-
             $table->foreignId('patient_id')
-                  ->unique()
-                  ->constrained('users')
-                  ->cascadeOnDelete();
-
+                ->unique()
+                ->constrained('users')
+                ->cascadeOnDelete();
 
             $table->text('chronic_diseases')->nullable();
             $table->text('allergies')->nullable();
@@ -29,12 +27,10 @@ return new class extends Migration
             $table->text('marital_status')->nullable();
             $table->integer('number_of_children')->nullable();
 
-
             $table->boolean('is_smoker')->default(false);
             $table->float('height')->nullable();
             $table->float('weight')->nullable();
             $table->string('blood_type')->nullable();
-
 
             $table->text('surgeries')->nullable();
             $table->text('family_history')->nullable();

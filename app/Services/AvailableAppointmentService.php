@@ -14,10 +14,10 @@ class AvailableAppointmentService
             ->where('date', $date)
             ->first();
 
-        if (!$schedule) {
+        if (! $schedule) {
             return [
                 'success' => false,
-                'message' => 'لا يوجد دوام لهذا اليوم'
+                'message' => 'لا يوجد دوام لهذا اليوم',
             ];
         }
 
@@ -37,10 +37,10 @@ class AvailableAppointmentService
                 ->where('start_time', $slotStart)
                 ->exists();
 
-            if (!$exists) {
+            if (! $exists) {
                 $availableSlots[] = [
                     'start_time' => $slotStart,
-                    'end_time' => $slotEnd
+                    'end_time' => $slotEnd,
                 ];
             }
 
@@ -51,7 +51,7 @@ class AvailableAppointmentService
             'success' => true,
             'date' => $date,
             'day' => Carbon::parse($date)->translatedFormat('l'),
-            'slots' => $availableSlots
+            'slots' => $availableSlots,
         ];
     }
 }

@@ -14,13 +14,13 @@ class PsychologicalSupportResource extends JsonResource
      */
     public function toArray(Request $request): array
     {
-      return [
-        'id' => $this->id,
-        'title' => $this->title,
-        'content' => $this->content,
-        'image' =>$this->image ? asset('storage/' . $this->image): null,
-        'created_by' => $this->creator->name ?? null,
-        'created_at' => $this->created_at,
-    ];
+        return [
+            'id' => $this->id,
+            'title' => $this->title,
+            'content' => $this->content,
+            'image' => $this->image ? asset('storage/'.$this->image) : null,
+            'created_by' => $this->creator->name ?? null,
+            'created_at' => $this->created_at,
+        ];
     }
 }

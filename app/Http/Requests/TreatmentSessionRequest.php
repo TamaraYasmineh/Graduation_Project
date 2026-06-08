@@ -25,24 +25,24 @@ class TreatmentSessionRequest extends FormRequest
         return [
 
             'treatment_plan_id' => 'required|exists:treatment_plans,id',
-    
-           // 'session_type' => 'required|in:lab_request,treatment',
-    
+
+            // 'session_type' => 'required|in:lab_request,treatment',
+
             'session_date' => 'required|date',
-    
+
             // treatment session
             'height' => 'required_if:session_type,treatment|nullable|numeric',
             'weight' => 'required_if:session_type,treatment|nullable|numeric',
             'bsa' => 'required_if:session_type,treatment|nullable|numeric',
             'dosage' => 'required_if:session_type,treatment|nullable|numeric',
-    
+
             // labs
             'lab_requested' => 'boolean',
-    
+
             'lab_tests_requested' => 'nullable|string',
-    
+
             'lab_results' => 'nullable|string',
-    
+
             'notes' => 'nullable|string',
         ];
     }

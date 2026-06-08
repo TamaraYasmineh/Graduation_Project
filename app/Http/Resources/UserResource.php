@@ -20,14 +20,14 @@ class UserResource extends JsonResource
             'email' => $this->email,
             'status' => $this->status,
             'role' => $this->role,
-            'phone'=>$this->phone,
-            'gender'=>$this->gender,
-            'profile_image' => $this->profile_image 
-    ? asset('storage/' . $this->profile_image) 
+            'phone' => $this->phone,
+            'gender' => $this->gender,
+            'profile_image' => $this->profile_image
+    ? asset('storage/'.$this->profile_image)
     : null,
-           'patient' => PatientResource::make($this->whenLoaded('patient')),
-           'doctor' => $this->whenLoaded('doctor'),
-           'secretary' => $this->whenLoaded('secretary'),
+            'patient' => PatientResource::make($this->whenLoaded('patient')),
+            'doctor' => $this->whenLoaded('doctor'),
+            'secretary' => $this->whenLoaded('secretary'),
         ];
     }
 }

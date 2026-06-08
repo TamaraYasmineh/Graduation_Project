@@ -17,7 +17,7 @@ class PaymeraService
     public function createPayment($data)
     {
         return $this->client()->post(
-            config('services.paymera.base_url') . '/api/create-payment',
+            config('services.paymera.base_url').'/api/create-payment',
             $data
         )->json();
     }
@@ -25,7 +25,7 @@ class PaymeraService
     public function getStatus($paymentId)
     {
         return $this->client()->get(
-            config('services.paymera.base_url') . "/api/get-payment-status/$paymentId"
+            config('services.paymera.base_url')."/api/get-payment-status/$paymentId"
         )->json();
     }
 
@@ -34,9 +34,9 @@ class PaymeraService
         $response = Http::withBasicAuth(
             config('services.paymera.username'),
             config('services.paymera.password')
-        )->post(config('services.paymera.base_url') . '/api/cancel-payment', [
-            "lang" => "en",
-            "payment_id" => $paymentId
+        )->post(config('services.paymera.base_url').'/api/cancel-payment', [
+            'lang' => 'en',
+            'payment_id' => $paymentId,
         ]);
 
         return $response->json();

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -10,9 +11,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $content
  * @property string|null $icon
  * @property int $created_by
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property-read \App\Models\User $creator
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property-read User $creator
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Advice newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Advice newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Advice query()
@@ -23,17 +25,19 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Advice whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Advice whereTitle($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|Advice whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class Advice extends Model
 {
     protected $table = 'advices';
+
     protected $fillable = [
         'title',
         'content',
         'created_by',
-        'icon'
-        ];
+        'icon',
+    ];
 
     public function creator()
     {

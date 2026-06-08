@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 /**
  * @property int $id
@@ -11,8 +12,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $address_on_map
  * @property string|null $branches
  * @property string $services
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ *
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CenterInfo newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CenterInfo newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CenterInfo query()
@@ -24,11 +26,12 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CenterInfo whereOpeningHours($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CenterInfo whereServices($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|CenterInfo whereUpdatedAt($value)
+ *
  * @mixin \Eloquent
  */
 class CenterInfo extends Model
 {
-     protected $table = 'center_info';
+    protected $table = 'center_info';
 
     protected $fillable = [
         'location',
@@ -36,7 +39,7 @@ class CenterInfo extends Model
         'address_on_map',
         'branches',
         'services',
-        'contact'
+        'contact',
     ];
 
     public function workingHours()

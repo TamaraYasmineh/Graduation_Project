@@ -1,23 +1,27 @@
 <?php
 
 namespace App\Services;
+
+use App\Models\DeviceToken;
+use Kreait\Firebase\Database;
 use Kreait\Firebase\Exception\MessagingException;
 use Kreait\Firebase\Factory;
-use Kreait\Firebase\Database;
 use Kreait\Firebase\Messaging;
 use Kreait\Firebase\Messaging\CloudMessage;
 use Kreait\Firebase\Messaging\Notification;
+
 class FirebaseService
 {
     protected Database $database;
+
     protected Messaging $messaging;
 
     public function __construct()
     {
         $factory = (new Factory)
-            //Path to service account file
+            // Path to service account file
             ->withServiceAccount(storage_path('app/firebase/firebase_credentials.json'))
-            //Change This to firebase realtime database path
+            // Change This to firebase realtime database path
             ->withDatabaseUri('https://medicalcenter-b5b4f-default-rtdb.firebaseio.com');
 
         $this->database = $factory->createDatabase();
@@ -34,54 +38,54 @@ class FirebaseService
         return $this->messaging;
     }
 
-//     public function sendNotification($token, $title, $body)
-// {
-//     $message = CloudMessage::withTarget('token', $token)
-//         ->withNotification(Notification::create($title, $body));
+    //     public function sendNotification($token, $title, $body)
+    // {
+    //     $message = CloudMessage::withTarget('token', $token)
+    //         ->withNotification(Notification::create($title, $body));
 
-//     return $this->messaging->send($message);
-// }
-// public function sendNotification($token, $title, $body)
-// {
-//     try {
-//         $message = CloudMessage::withTarget('token', $token)
-//             ->withNotification(Notification::create($title, $body));
+    //     return $this->messaging->send($message);
+    // }
+    // public function sendNotification($token, $title, $body)
+    // {
+    //     try {
+    //         $message = CloudMessage::withTarget('token', $token)
+    //             ->withNotification(Notification::create($title, $body));
 
-//         return [
-//             'success' => true,
-//             'id' => $this->messaging->send($message)
-//         ];
+    //         return [
+    //             'success' => true,
+    //             'id' => $this->messaging->send($message)
+    //         ];
 
-//     } catch (MessagingException $e) {
-//         \App\Models\DeviceToken::where('token', $token)->delete();
+    //     } catch (MessagingException $e) {
+    //         \App\Models\DeviceToken::where('token', $token)->delete();
 
-//         return [
-//             'success' => false,
-//             'error' => $e->getMessage()
-//         ];
-//     }
-// }
-public function sendNotification($token, $title, $body)
-{
-    try {
-        $message = CloudMessage::withTarget('token', $token)
-            ->withNotification(Notification::create($title, $body)) 
-            ->withData([
-                'type' => 'support'
-            ]);
+    //         return [
+    //             'success' => false,
+    //             'error' => $e->getMessage()
+    //         ];
+    //     }
+    // }
+    public function sendNotification($token, $title, $body)
+    {
+        try {
+            $message = CloudMessage::withTarget('token', $token)
+                ->withNotification(Notification::create($title, $body))
+                ->withData([
+                    'type' => 'support',
+                ]);
 
-        return [
-            'success' => true,
-            'id' => $this->messaging->send($message)
-        ];
+            return [
+                'success' => true,
+                'id' => $this->messaging->send($message),
+            ];
 
-    } catch (MessagingException $e) {
-        \App\Models\DeviceToken::where('token', $token)->delete();
+        } catch (MessagingException $e) {
+            DeviceToken::where('token', $token)->delete();
 
-        return [
-            'success' => false,
-            'error' => $e->getMessage()
-        ];
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+            ];
+        }
     }
-}
 }

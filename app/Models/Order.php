@@ -26,10 +26,12 @@ class Order extends Model
     {
         return $this->belongsTo(User::class);
     }
+
     public function appointment()
-{
-    return $this->belongsTo(Appointment::class);
-}
+    {
+        return $this->belongsTo(Appointment::class);
+    }
+
     public function markAccepted()
     {
         $this->update(['status' => 'accepted']);
@@ -48,5 +50,4 @@ class Order extends Model
         $this->update(['status' => 'canceled']);
         $this->appointment?->update(['status' => 'cancelled']);
     }
-
 }
