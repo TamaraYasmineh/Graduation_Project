@@ -22,9 +22,12 @@ class ConsultantResource extends JsonResource
 
         return [
             'id' => $this->id,
+            'type' => $isInternal
+                ? 'internal'
+                : 'external',
 
             'name' => $isInternal
-                ? $doctor->user->name
+    ? optional($doctor->user)->name
                 : $doctor->name,
 
             'specialization' => $doctor->specialization,
@@ -34,9 +37,10 @@ class ConsultantResource extends JsonResource
             'years_of_experience' => $doctor->years_of_experience,
 
             'consultation_fee' => $this->consultation_fee,
+            'is_active' => $this->is_active,
 
             'profile_image' => $isInternal
-            ? $doctor->user->profile_image_url
+    ? optional($doctor->user)->profile_image_url
             : $doctor->profile_image_url,
         ];
 

@@ -14,35 +14,6 @@ use Illuminate\Http\Request;
 
 class ConsultantController extends Controller
 {
-    // public function addInternalDoctor(Request $request)
-    // {
-    //     $request->validate([
-    //         'doctor_id' => 'required|exists:doctors,id',
-    //         'consultation_fee' => 'required|numeric|min:1',
-    //         'whatsapp_number' => 'required',
-    //     ]);
-
-    //     $doctor = Doctor::findOrFail(
-    //         $request->doctor_id
-    //     );
-
-    //     if ($doctor->consultant) {
-    //         return response()->json([
-    //             'message' => 'هذا الطبيب استشاري مسبقاً'
-    //         ], 422);
-    //     }
-
-    //     $consultant = $doctor->consultant()->create([
-    //         'consultation_fee' => $request->consultation_fee,
-    //         'whatsapp_number' => $request->whatsapp_number,
-    //         'is_active' => true,
-    //     ]);
-
-    //     return response()->json([
-    //         'message' => 'تم إضافة الاستشاري',
-    //         'data' => $consultant
-    //     ]);
-    // }
     public function addInternalDoctor(
         StoreInternalConsultantRequest $request,
         ConsultantService $service
@@ -68,49 +39,7 @@ class ConsultantController extends Controller
             ], 422);
         }
     }
-    // public function addExternalDoctor(Request $request)
-    // {
-    //     $request->validate([
-    //         'name' => 'required',
-    //         'phone' => 'required',
-    //         'specialization' => 'required',
-    //         'consultation_fee' => 'required|numeric|min:1',
-    //         'whatsapp_number' => 'required',
-    //         'profile_image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048'
 
-    //     ]);
-    //     $imagePath = null;
-
-    //     if ($request->hasFile('profile_image')) {
-
-    //         $imagePath = $request
-    //             ->file('profile_image')
-    //             ->store('consultants', 'public');
-    //     }
-    //     $externalDoctor = ExternalDoctor::create([
-    //         'name' => $request->name,
-    //         'phone' => $request->phone,
-    //         'specialization' => $request->specialization,
-    //         'years_of_experience' => $request->years_of_experience,
-    //         'license_number' => $request->license_number,
-    //         'bio' => $request->bio,
-    //         'profile_image' => $imagePath,
-
-    //     ]);
-
-    //     $consultant = $externalDoctor
-    //         ->consultant()
-    //         ->create([
-    //             'consultation_fee' => $request->consultation_fee,
-    //             'whatsapp_number' => $request->whatsapp_number,
-    //             'is_active' => true
-    //         ]);
-
-    //     return response()->json([
-    //         'message' => 'تم إضافة الاستشاري الخارجي',
-    //         'data' => $consultant
-    //     ]);
-    // }
     public function addExternalDoctor(
         StoreExternalConsultantRequest $request,
         ConsultantService $service
@@ -130,12 +59,19 @@ class ConsultantController extends Controller
         ]);
     }
 
+
     public function index()
     {
-        $consultants = Consultant::with(
-            'consultable'
-        )
-            ->where('is_active', true)
+        $consultants = Consultant::with('consultable')
+            ->active()
+            ->get();
+
+        return ConsultantResource::collection($consultants);
+    }
+
+    public function getAllConsultantsForSD()
+    {
+        $consultants = Consultant::with('consultable')
             ->get();
 
         return ConsultantResource::collection($consultants);
@@ -170,4 +106,38 @@ class ConsultantController extends Controller
             ], 404);
         }
     }
+    public function toggleStatus(int $consultantId)
+    {
+        $consultant = Consultant::findOrFail($consultantId);
+
+        $consultant->update([
+            'is_active' => !$consultant->is_active
+        ]);
+
+        return response()->json([
+            'message' => $consultant->is_active
+                ? 'Consultant activated'
+                : 'Consultant deactivated',
+            'is_active' => $consultant->is_active
+        ]);
+    }
+    public function filter(Request $request)
+{
+    $query = Consultant::with('consultable');
+
+    if ($request->has('is_active')) {
+
+        $query->where(
+            'is_active',
+            filter_var(
+                $request->is_active,
+                FILTER_VALIDATE_BOOLEAN
+            )
+        );
+    }
+
+    return ConsultantResource::collection(
+        $query->get()
+    );
+}
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth\AuthController;
 use App\Http\Controllers\ConsultantController;
+use App\Http\Controllers\ConsultationPaymentController;
 use App\Http\Controllers\Doctor\AppointmentController;
 use App\Http\Controllers\Doctor\BookingController;
 use App\Http\Controllers\DrugController;
@@ -87,6 +88,8 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
 
     Route::post('/consultants/external', [ConsultantController::class, 'addExternalDoctor']);
     Route::post('/update/{consultantId}', [ConsultantController::class, 'update']);
+    Route::patch('/consultants/toggle-status/{consultantId}', [ConsultantController::class, 'toggleStatus']);
+    Route::get('/consultants/filter', [ConsultantController::class, 'filter']);
 });
 
 // patient
@@ -98,10 +101,29 @@ Route::middleware(['auth:sanctum', 'role:patient'])->group(function () {
     Route::get('/payment/status/{paymentId}', [PaymentController::class, 'getPaymentStatus']); //
 
     Route::post('/addReview', [DoctorReviewController::class, 'addReview']);
-    Route::get('medical-record/qr', [MedicalRecordController::class, 'showWithQr'])
-        ->name('medical-records.show-qr');
+    Route::get('medical-record/qr', [MedicalRecordController::class, 'showWithQr'])->name('medical-records.show-qr');
 
     Route::post('/uploadMedicalTest', [MedicalTestController::class, 'uploadMedicalTest']);
+    Route::post(
+        '/consultation-payment/create',
+        [ConsultationPaymentController::class, 'create']
+    );
+
+    Route::get(
+        '/consultation-payment/whatsapp/{consultationId}',
+        [ConsultationPaymentController::class, 'whatsapp']
+    );
+
+    Route::get(
+        '/consultation-payment/status/{paymentId}',
+        [ConsultationPaymentController::class, 'getPaymentStatus']
+    );
+
+    Route::post(
+        '/consultation-payment/cancel/{paymentId}',
+        [ConsultationPaymentController::class, 'cancel']
+    );
+    Route::get('/consultants', [ConsultantController::class, 'index']);
 });
 
 // patient|super_doctor
@@ -110,7 +132,7 @@ Route::middleware(['auth:sanctum', 'role:patient|super_doctor'])->group(function
     Route::post('/updateReview/{id}', [DoctorReviewController::class, 'updateReview']);
     Route::delete('/deleteReview/{id}', [DoctorReviewController::class, 'deleteReview']);
 
-    Route::get('/consultants', [ConsultantController::class, 'index']);
+    Route::get('/getAllConsultantsForSD', [ConsultantController::class, 'getAllConsultantsForSD']);
 });
 
 // doctor|super_doctor
@@ -166,7 +188,9 @@ Route::middleware('auth:sanctum', 'approved', 'role:secretary')->group(function 
     Route::post('/appointments/{id}/status', [AppointmentController::class, 'updateStatus']);
     Route::post('/Secretary/createPatientBySecretary', [AuthController::class, 'createPatientBySecretary']);
     Route::post('/medical-recordBysecretary', [MedicalRecordController::class, 'storeMedicalRecordBySecretary']);
-    Route::post('/book-appointment-by-secretary', [MedicalRecordController::class, 'bookAppointmentBySecretary']
+    Route::post(
+        '/book-appointment-by-secretary',
+        [MedicalRecordController::class, 'bookAppointmentBySecretary']
     );
     Route::post('/uploadTestBySecretary/{record}', [MedicalTestController::class, 'uploadTestBySecretary']);
 });
@@ -186,3 +210,13 @@ Route::post('/payment/cancel/{paymentId}', [PaymentController::class, 'cancel'])
 //         'message' => 'working'
 //     ]);
 // });
+
+Route::get(
+    '/consultation-payment/callback/{orderId}',
+    [ConsultationPaymentController::class, 'callback']
+);
+
+Route::get(
+    '/consultation-payment/trigger/{orderId}',
+    [ConsultationPaymentController::class, 'trigger']
+);
