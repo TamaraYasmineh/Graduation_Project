@@ -8,11 +8,11 @@ use App\Models\Secretary;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-
+use App\Services\OtpService;
 class AuthService
 {
     public function __construct(
-        private OTPService $otpService
+        private OtpService $otpService
     ) {}
 
     public function register(array $data)

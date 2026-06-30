@@ -174,6 +174,7 @@ Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor|secreta
     Route::get('/treatment-sessions', [SessionController::class, 'getAllTreatmentSessions']);
     Route::get('/treatment-sessions/{id}', [SessionController::class, 'getTreatmentSession']);
     Route::delete('/treatment-sessions/{id}', [SessionController::class, 'deleteTreatmentSession']);
+    Route::get('/patients/{patient}/full-profile', [PatientController::class, 'fullProfile']);
 });
 
 // patient|secretary

@@ -9,6 +9,8 @@ use App\Http\Resources\UserResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Resources\PatientFullProfileResource;
+use App\Models\Appointment;
 
 class PatientController extends BaseController
 {
@@ -139,5 +141,35 @@ class PatientController extends BaseController
             new InforPatientResource($patient),
             'Patient retrieved successfully'
         );
+    }
+    public function fullProfile(User $patient)
+    {
+        $user = auth()->user();
+    
+        // إذا كان دكتور
+        if ($user->hasRole('doctor')) {
+    
+            $doctorId = $user->doctor->id;
+    
+            $hasAppointment = Appointment::where('doctor_id', $doctorId)
+                ->where('patient_id', $patient->id)
+                ->exists();
+    
+            abort_unless($hasAppointment, 403, 'Unauthorized.');
+        }
+    
+        // إذا كان super_admin يشاهد الجميع
+    
+        $patient->load([
+            'patient',
+            'medicalRecord.treatmentPlan.protocol.drugs',
+            'medicalRecord.treatmentPlan.sessions',
+            'medicalRecord.medicalTests',
+        ]);
+    
+        return response()->json([
+            'success' => true,
+            'data' => new PatientFullProfileResource($patient),
+        ]);
     }
 }
