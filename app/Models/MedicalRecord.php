@@ -147,4 +147,5 @@ class MedicalRecord extends Model
     {
         return $this->hasOne(Treatment_plan::class);
     }
+    
 }

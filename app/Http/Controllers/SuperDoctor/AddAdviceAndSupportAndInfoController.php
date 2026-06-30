@@ -178,12 +178,24 @@ class AddAdviceAndSupportAndInfoController extends BaseController
         foreach ($patients as $patient) {
             $tokens = $patient->deviceTokens()->pluck('token');
             foreach ($tokens as $token) {
-                $responses[] = $firebase->sendNotification(
+        
+                $notification = $firebase->sendNotification(
                     $token,
-                    ' فهيا يابطل فريقنا جاهز لدعمك',
+                    'فهيا يابطل فريقنا جاهز لدعمك',
                     'رسالة جديدة'
                 );
+            
+                $responses[] = [
+                    'patient_id' => $patient->id,
+                    'patient_name' => $patient->name,
+                    'token' => $token,
+                    'title' => 'فهيا يابطل فريقنا جاهز لدعمك',
+                    'body' => 'رسالة جديدة',
+                    'sent_at' => now()->toDateTimeString(),
+                    'firebase_response' => $notification,
+                ];
             }
+            
         }
 
         return response()->json([

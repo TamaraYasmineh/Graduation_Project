@@ -32,4 +32,8 @@ class Treatment_plan extends Model
     {
         return $this->hasMany(Treatment_session::class);
     }
+    public function protocol()
+    {
+        return $this->belongsTo(Protocol::class);
+    }
 }
