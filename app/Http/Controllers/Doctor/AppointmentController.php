@@ -106,4 +106,48 @@ class AppointmentController extends BaseController
 
         return $this->sendResponse($appointment, 'Status updated successfully');
     }
+    public function getPatientFilter(Request $request)
+    {
+        $type = $request->query('type', 'daily');
+    
+        $user = Auth::user();
+    
+        $query = Appointment::with(['patient.patient']);
+    
+        // إذا كان دكتور يرى مرضاه فقط
+        if (! $user->hasRole('super_doctor')) {
+            $query->where('doctor_id', $user->doctor->id);
+        }
+    
+        // فلترة حسب التاريخ
+        if ($type === 'daily') {
+    
+            $query->whereDate('date', Carbon::today());
+    
+        } elseif ($type === 'weekly') {
+    
+            $query->whereBetween('date', [
+                Carbon::now()->startOfWeek(),
+                Carbon::now()->endOfWeek(),
+            ]);
+    
+        } elseif ($type === 'monthly') {
+    
+            $query->whereMonth('date', Carbon::now()->month)
+                  ->whereYear('date', Carbon::now()->year);
+        }
+    
+        // منع تكرار نفس المريض إذا كان لديه أكثر من موعد
+        $patients = $query->get()
+            ->pluck('patient')
+            ->unique('id')
+            ->values();
+    
+        return response()->json([
+            'success' => true,
+            'type' => $type,
+            'patients' => $patients,
+        ]);
+    }
+    
 }
