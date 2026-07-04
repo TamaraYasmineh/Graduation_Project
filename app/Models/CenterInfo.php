@@ -40,6 +40,8 @@ class CenterInfo extends Model
         'branches',
         'services',
         'contact',
+        'longitude',
+        'latitude'
     ];
 
     public function workingHours()

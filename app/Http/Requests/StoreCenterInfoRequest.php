@@ -33,7 +33,6 @@ class StoreCenterInfoRequest extends FormRequest
         return [
             'location' => 'required|string|max:255',
             'address_on_map' => 'required|string',
-            'opening_hours' => 'nullable|string|max:255',
             'branches' => 'nullable|string',
             'services' => 'required|string',
             'contact' => 'required|string',
@@ -44,6 +43,9 @@ class StoreCenterInfoRequest extends FormRequest
             'working_hours.*.start_time' => 'nullable|date_format:H:i',
             'working_hours.*.end_time' => 'nullable|date_format:H:i',
             'working_hours.*.is_closed' => 'required|boolean',
+
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
         ];
     }
 }

@@ -54,4 +54,18 @@ class Patient extends Model
     {
         return $this->morphMany(MedicalTest::class, 'uploadable');
     }
+    public function archives()
+{
+    return $this->hasMany(PatientArchive::class);
+}
+
+public function isArchived(): bool
+{
+    return $this->archives()->active()->exists();
+}
+
+public function latestArchive()
+{
+    return $this->archives()->active()->latest()->first();
+}
 }

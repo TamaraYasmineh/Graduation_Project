@@ -25,6 +25,9 @@ class CenterInfoResource extends JsonResource
             'working_hours' => WorkingHourResource::collection(
                 $this->whenLoaded('workingHours')
             ),
+
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
         ];
     }
 }

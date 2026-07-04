@@ -24,7 +24,6 @@ class UpdateCenterInfoRequest extends FormRequest
     {
         return [
             'location' => 'sometimes|string|max:255',
-            'opening_hours' => 'sometimes|string|max:255',
             'address_on_map' => 'sometimes|string',
             'branches' => 'nullable|string',
             'services' => 'sometimes|string',
@@ -34,6 +33,9 @@ class UpdateCenterInfoRequest extends FormRequest
             'working_hours.*.start_time' => 'nullable|date_format:H:i',
             'working_hours.*.end_time' => 'nullable|date_format:H:i',
             'working_hours.*.is_closed' => 'required|boolean',
+
+            'latitude' => 'nullable|numeric|between:-90,90',
+           'longitude' => 'nullable|numeric|between:-180,180',
         ];
     }
 }

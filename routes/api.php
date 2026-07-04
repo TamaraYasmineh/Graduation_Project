@@ -17,6 +17,7 @@ use App\Http\Controllers\SuperDoctor\AddAdviceAndSupportAndInfoController;
 use App\Http\Controllers\SuperDoctor\ApproveAndRejectController;
 use App\Http\Controllers\SuperDoctor\EmployeeController;
 use App\Http\Controllers\SuperDoctor\SuperDoctorController;
+use App\Http\Controllers\PatientArchiveController;
 use Illuminate\Support\Facades\Route;
 
 Route::post('/register', [AuthController::class, 'register']); //
@@ -176,6 +177,11 @@ Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor|secreta
     Route::delete('/treatment-sessions/{id}', [SessionController::class, 'deleteTreatmentSession']);
     Route::get('/patients/{patient}/full-profile', [PatientController::class, 'fullProfile']);
     Route::get('/getPatientFilter', [AppointmentController::class, 'getPatientFilter']);
+
+    Route::post('/patients/{patientId}/archive', [PatientArchiveController::class, 'archive']);
+    Route::post('/patients/{patientId}/unarchive', [PatientArchiveController::class, 'unarchive']);
+    Route::get('/patient-archives', [PatientArchiveController::class, 'index']);
+    Route::get('/patient-archives/statistics', [PatientArchiveController::class, 'statistics']);
 });
 
 // patient|secretary

@@ -14,11 +14,12 @@ return new class extends Migration
         Schema::create('center_info', function (Blueprint $table) {
             $table->id();
             $table->string('location');
-            $table->string('opening_hours');
             $table->string('address_on_map');
             $table->string('branches')->nullable();
             $table->string('services');
             $table->string('contact');
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 11, 8)->nullable();
             $table->timestamps();
         });
     }
