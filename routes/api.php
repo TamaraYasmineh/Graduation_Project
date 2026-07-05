@@ -10,15 +10,17 @@ use App\Http\Controllers\MedicalTestController;
 use App\Http\Controllers\Patient\DoctorReviewController;
 use App\Http\Controllers\Patient\MedicalRecordController;
 use App\Http\Controllers\Patient\PatientController;
+use App\Http\Controllers\PatientArchiveController;
 use App\Http\Controllers\PaymentController;
+use App\Http\Controllers\PostChemoRecommendationController;
 use App\Http\Controllers\ProtocolController;
 use App\Http\Controllers\SessionController;
 use App\Http\Controllers\SuperDoctor\AddAdviceAndSupportAndInfoController;
 use App\Http\Controllers\SuperDoctor\ApproveAndRejectController;
 use App\Http\Controllers\SuperDoctor\EmployeeController;
 use App\Http\Controllers\SuperDoctor\SuperDoctorController;
-use App\Http\Controllers\PatientArchiveController;
 use Illuminate\Support\Facades\Route;
+
 
 Route::post('/register', [AuthController::class, 'register']); //
 Route::post('/login', [AuthController::class, 'login']); //
@@ -91,6 +93,11 @@ Route::middleware(['auth:sanctum', 'role:super_doctor'])->group(function () {
     Route::post('/update/{consultantId}', [ConsultantController::class, 'update']);
     Route::patch('/consultants/toggle-status/{consultantId}', [ConsultantController::class, 'toggleStatus']);
     Route::get('/consultants/filter', [ConsultantController::class, 'filter']);
+    // Route::put('/recommendations/{recommendation}', [PostChemoRecommendationController::class, 'update']);
+    Route::get('/allRecommendationsForAdmin', [PostChemoRecommendationController::class, 'allRecommendationsForAdmin']);
+    Route::post('/storeRecommendations', [PostChemoRecommendationController::class, 'storeRecommendations']);
+    Route::put('/updateRecommendations/{recommendation}', [PostChemoRecommendationController::class, 'updateRecommendations']);
+    Route::delete('/destroyRecommendations/{recommendation}', [PostChemoRecommendationController::class, 'destroyRecommendations']);
 });
 
 // patient
@@ -125,6 +132,8 @@ Route::middleware(['auth:sanctum', 'role:patient'])->group(function () {
         [ConsultationPaymentController::class, 'cancel']
     );
     Route::get('/consultants', [ConsultantController::class, 'index']);
+    Route::get('/recommendations', [PostChemoRecommendationController::class, 'recommendations']);
+    Route::get('/warningSymptoms', [PostChemoRecommendationController::class, 'warningSymptoms']);
 });
 
 // patient|super_doctor

@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
             RoleSeeder::class,
             PermissionSeeder::class,
             AdminSeeder::class,
+            PostChemoRecommendationSeeder::class,
         ]);
     }
 }
