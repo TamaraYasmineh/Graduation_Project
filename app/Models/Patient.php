@@ -68,4 +68,13 @@ public function latestArchive()
 {
     return $this->archives()->active()->latest()->first();
 }
+public function referrals()
+{
+    return $this->hasMany(PatientReferral::class);
+}
+
+public function latestReferral()
+{
+    return $this->referrals()->latest()->first();
+}
 }
