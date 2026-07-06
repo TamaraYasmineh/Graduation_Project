@@ -19,11 +19,7 @@ use App\Http\Controllers\SuperDoctor\AddAdviceAndSupportAndInfoController;
 use App\Http\Controllers\SuperDoctor\ApproveAndRejectController;
 use App\Http\Controllers\SuperDoctor\EmployeeController;
 use App\Http\Controllers\SuperDoctor\SuperDoctorController;
-<<<<<<< Updated upstream
-=======
-use App\Http\Controllers\PatientArchiveController;
 use App\Http\Controllers\PatientReferralController;
->>>>>>> Stashed changes
 use Illuminate\Support\Facades\Route;
 
 
