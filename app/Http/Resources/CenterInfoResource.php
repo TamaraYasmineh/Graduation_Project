@@ -26,8 +26,8 @@ class CenterInfoResource extends JsonResource
                 $this->whenLoaded('workingHours')
             ),
 
-            'latitude' => 'nullable|numeric|between:-90,90',
-            'longitude' => 'nullable|numeric|between:-180,180',
+            'latitude' => $this->latitude,
+            'longitude' => $this->longitude,
         ];
     }
 }

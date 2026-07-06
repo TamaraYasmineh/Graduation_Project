@@ -19,6 +19,11 @@ use App\Http\Controllers\SuperDoctor\AddAdviceAndSupportAndInfoController;
 use App\Http\Controllers\SuperDoctor\ApproveAndRejectController;
 use App\Http\Controllers\SuperDoctor\EmployeeController;
 use App\Http\Controllers\SuperDoctor\SuperDoctorController;
+<<<<<<< Updated upstream
+=======
+use App\Http\Controllers\PatientArchiveController;
+use App\Http\Controllers\PatientReferralController;
+>>>>>>> Stashed changes
 use Illuminate\Support\Facades\Route;
 
 
@@ -191,6 +196,12 @@ Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor|secreta
     Route::post('/patients/{patientId}/unarchive', [PatientArchiveController::class, 'unarchive']);
     Route::get('/patient-archives', [PatientArchiveController::class, 'index']);
     Route::get('/patient-archives/statistics', [PatientArchiveController::class, 'statistics']);
+
+    Route::post('/patients/{patientId}/refer', [PatientReferralController::class, 'refer']);
+    Route::post('/referrals/{referralId}/status', [PatientReferralController::class, 'updateStatus']);
+    Route::get('/patient-referrals', [PatientReferralController::class, 'index']);
+    Route::get('/patient-referrals/statistics', [PatientReferralController::class, 'statistics']);
+    Route::get('/center-doctors', [PatientReferralController::class, 'getDoctors']);
 });
 
 // patient|secretary
