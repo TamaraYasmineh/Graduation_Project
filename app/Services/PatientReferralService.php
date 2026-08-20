@@ -110,7 +110,7 @@ class PatientReferralService
 
     public function getReferrals(array $filters = [])
     {
-        $query = PatientReferral::with(['patient', 'referredBy', 'referredToDoctor'])
+        $query = PatientReferral::with(['patient.user', 'referredBy', 'referredToDoctor'])
             ->latest('referred_at');
 
         // فلترة حسب النوع

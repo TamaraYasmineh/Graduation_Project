@@ -26,6 +26,7 @@ class BookAppointmentRequest extends FormRequest
             'doctor_id' => 'required|exists:doctors,id',
             'date' => 'required|date',
             'start_time' => 'required',
+            'session_type' => 'required',
         ];
     }
 }

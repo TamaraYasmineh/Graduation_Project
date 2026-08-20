@@ -154,4 +154,47 @@ class MedicalTestController extends Controller
 
         return response()->file($path);
     }
+
+    public function uploadTestForPatient(
+        MedicalTestRequest $request,
+        $patientId
+    ) {
+        if (! Auth::user()->hasRole('secretary')) {
+            return response()->json([
+                'status' => false,
+                'message' => 'غير مصرح',
+            ], 403);
+        }
+    
+        $record = MedicalRecord::query()
+            ->where('patient_id', $patientId)
+            ->first();
+    
+        if (! $record) {
+            return response()->json([
+                'status' => false,
+                'message' => 'لا يوجد سجل طبي لهذا المريض',
+            ], 404);
+        }
+    
+        $tests = $this->service->upload($request, $record);
+    
+        return response()->json([
+            'status' => true,
+            'message' => 'Uploaded successfully',
+            'data' => MedicalTestResource::collection($tests),
+        ]);
+    }
+    public function getLatestMedicalTests()
+{
+    $tests = MedicalTest::query()
+        ->latest()
+        ->limit(10)
+        ->get();
+
+    return response()->json([
+        'status' => true,
+        'data' => MedicalTestResource::collection($tests),
+    ]);
+}
 }
