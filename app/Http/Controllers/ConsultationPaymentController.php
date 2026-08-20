@@ -12,7 +12,7 @@ use App\Models\ExternalDoctor;
 use App\Services\PaymeraService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Log;
 class ConsultationPaymentController extends Controller
 {
     /*
@@ -588,59 +588,128 @@ class ConsultationPaymentController extends Controller
         $paymentId,
         PaymeraService $paymera
     ) {
-        $payment =
-            ConsultationPayment::query()
-                ->where(
-                    'payment_id',
-                    $paymentId
-                )
-                ->first();
-
-        $response =
-            $paymera->getStatus(
-                $paymentId
-            );
-
-        if (
-            ! $response ||
-            ! isset(
-                $response['ErrorCode']
-            )
-        ) {
+        Log::info('===== GET PAYMENT STATUS =====');
+        Log::info('Payment ID', [
+            'payment_id' => $paymentId,
+        ]);
+    
+        $payment = ConsultationPayment::query()
+            ->where('payment_id', $paymentId)
+            ->first();
+    
+        Log::info('Payment From DB', [
+            'exists' => $payment ? true : false,
+            'status' => $payment?->status,
+            'consultation_order_id' => $payment?->consultation_order_id,
+        ]);
+    
+        $response = $paymera->getStatus($paymentId);
+    
+        Log::info('Paymera Response', [
+            'response' => $response,
+        ]);
+    
+        if (! $response || ! isset($response['ErrorCode'])) {
+    
+            Log::error('No response from Paymera');
+    
             return response()->json([
                 'message' => 'لا يوجد رد من بيميرا',
             ], 500);
         }
-
-        if (
-            $response['ErrorCode'] != 0
-        ) {
+    
+        if ($response['ErrorCode'] != 0) {
+    
+            Log::error('Paymera Error', [
+                'response' => $response,
+            ]);
+    
             return response()->json([
-                'message' => $response['ErrorMessage']
-                    ?? 'خطأ في الدفع',
+                'message' => $response['ErrorMessage'] ?? 'خطأ في الدفع',
             ], 400);
         }
-
-        if (
-            ! isset(
-                $response['Data']
-            )
-        ) {
+    
+        if (! isset($response['Data'])) {
+    
+            Log::error('Missing Data', [
+                'response' => $response,
+            ]);
+    
             return response()->json([
                 'message' => 'Missing Data in response',
             ], 500);
         }
-
+    
+        if (! $payment) {
+    
+            Log::error('Payment not found in DB');
+    
+            return response()->json([
+                'message' => 'Payment not found',
+            ], 404);
+        }
+    
+        $status = $response['Data']['status'];
+    
+        Log::info('Status From Paymera', [
+            'status' => $status,
+            'db_status_before' => $payment->status,
+        ]);
+    
+        switch ($status) {
+    
+            case 'A':
+    
+                Log::info('Entering markSuccess');
+    
+                if ($payment->status !== 'A') {
+    
+                    $payment->markSuccess(
+                        $response['Data']['rrn'] ?? null,
+                        $response
+                    );
+    
+                    Log::info('markSuccess executed');
+                } else {
+    
+                    Log::info('Payment already A');
+                }
+    
+                break;
+    
+            case 'F':
+    
+                Log::info('Entering markFailed');
+    
+                if ($payment->status !== 'F') {
+                    $payment->markFailed($response);
+                }
+    
+                break;
+    
+            case 'C':
+    
+                Log::info('Entering markCanceled');
+    
+                if ($payment->status !== 'C') {
+                    $payment->markCanceled($response);
+                }
+    
+                break;
+        }
+    
+        $payment->refresh();
+    
+        Log::info('Payment After Refresh', [
+            'status' => $payment->status,
+            'paid_at' => $payment->paid_at,
+        ]);
+    
         return response()->json([
-
-            'status' => $response['Data']['status'],
-
+            'status' => $payment->status,
             'amount' => $response['Data']['amount'],
-
-            'paid_at' => $payment?->paid_at,
-
-            'consultation_order_id' => $payment?->consultation_order_id,
-
+            'paid_at' => $payment->paid_at,
+            'consultation_order_id' => $payment->consultation_order_id,
         ]);
     }
 }

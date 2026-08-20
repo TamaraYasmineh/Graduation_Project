@@ -15,15 +15,11 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PostChemoRecommendationController;
 use App\Http\Controllers\ProtocolController;
 use App\Http\Controllers\SessionController;
+use App\Http\Controllers\PatientReferralController;
 use App\Http\Controllers\SuperDoctor\AddAdviceAndSupportAndInfoController;
 use App\Http\Controllers\SuperDoctor\ApproveAndRejectController;
 use App\Http\Controllers\SuperDoctor\EmployeeController;
 use App\Http\Controllers\SuperDoctor\SuperDoctorController;
-<<<<<<< Updated upstream
-=======
-use App\Http\Controllers\PatientArchiveController;
-use App\Http\Controllers\PatientReferralController;
->>>>>>> Stashed changes
 use Illuminate\Support\Facades\Route;
 
 
@@ -139,6 +135,8 @@ Route::middleware(['auth:sanctum', 'role:patient'])->group(function () {
     Route::get('/consultants', [ConsultantController::class, 'index']);
     Route::get('/recommendations', [PostChemoRecommendationController::class, 'recommendations']);
     Route::get('/warningSymptoms', [PostChemoRecommendationController::class, 'warningSymptoms']);
+    Route::get('/my-treatment-sessions',[SessionController::class, 'getMyTreatmentSessions']
+    );
 });
 
 // patient|super_doctor
@@ -163,9 +161,8 @@ Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor|secreta
     Route::get('/doctor/getAllSchedulesFilterDay', [BookingController::class, 'getAllSchedulesFilterDay']);
     Route::post('/doctor/getAllSchedulesMonth', [BookingController::class, 'getAllSchedulesMonth']);
     Route::get('/doctor/getAllSchedulesWeek', [BookingController::class, 'getAllSchedulesWeek']);
-
     Route::get('/getPatientMedicalTests/{id}', [MedicalTestController::class, 'getPatientMedicalTests']);
-
+    Route::get('/medical-tests/latest', [MedicalTestController::class, 'getLatestMedicalTests']);
     Route::get('/getByRecord/{id}', [MedicalTestController::class, 'getByRecord']);
     Route::post('/getPatient', [PatientController::class, 'getPatient']);
     Route::get(
@@ -191,7 +188,7 @@ Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor|secreta
     Route::delete('/treatment-sessions/{id}', [SessionController::class, 'deleteTreatmentSession']);
     Route::get('/patients/{patient}/full-profile', [PatientController::class, 'fullProfile']);
     Route::get('/getPatientFilter', [AppointmentController::class, 'getPatientFilter']);
-
+    Route::get('/session-appointments', [AppointmentController::class, 'getSessionAppointments']);
     Route::post('/patients/{patientId}/archive', [PatientArchiveController::class, 'archive']);
     Route::post('/patients/{patientId}/unarchive', [PatientArchiveController::class, 'unarchive']);
     Route::get('/patient-archives', [PatientArchiveController::class, 'index']);
@@ -207,6 +204,10 @@ Route::middleware(['auth:sanctum', 'approved', 'role:doctor|super_doctor|secreta
 // patient|secretary
 Route::middleware('auth:sanctum', 'approved', 'role:patient|secretary')->group(function () {
     Route::delete('/deleteMedicalTest/{id}', [MedicalTestController::class, 'deleteMedicalTest']);
+    Route::get(
+        'patient/treatment-sessions',
+        [SessionController::class, 'getMyTreatmentSessions']
+    );
 });
 
 // secretary
@@ -220,7 +221,24 @@ Route::middleware('auth:sanctum', 'approved', 'role:secretary')->group(function 
         '/book-appointment-by-secretary',
         [MedicalRecordController::class, 'bookAppointmentBySecretary']
     );
+    Route::get(
+        '/Secretary/getPayments',
+        [MedicalRecordController::class, 'getPayments']
+    );
+    Route::post(
+        '/orders/{id}/amount-part',
+        [MedicalRecordController::class, 'addAmountPart']
+    );
+    Route::get('/payments/user/{userId}', [MedicalRecordController::class, 'getPaymentsByUser']);
     Route::post('/uploadTestBySecretary/{record}', [MedicalTestController::class, 'uploadTestBySecretary']);
+    Route::post(
+        'secretary/patients/{patientId}/medical-tests',
+        [MedicalTestController::class, 'uploadTestForPatient']
+    );
+    Route::post(
+        '/secretary/patients/{patient}',
+        [AuthController::class, 'updatePatientBySecretary']
+    );
 });
 
 Route::post('/pay', [PaymentController::class, 'create']);

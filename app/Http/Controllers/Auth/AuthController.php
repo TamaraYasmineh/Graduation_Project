@@ -249,4 +249,66 @@ class AuthController extends BaseController
             'generated_password' => $plainPassword,
         ], 'Patient created successfully');
     }
+
+    public function updatePatientBySecretary(Request $request, Patient $patient)
+{
+    $actor = $request->user();
+
+    if (! $actor->hasRole('secretary')) {
+        return $this->sendError('Unauthorized', [], 403);
+    }
+
+    $user = $patient->user;
+
+    if (! $user) {
+        return $this->sendError('Patient user not found', [], 404);
+    }
+
+    $request->validate([
+        'name' => 'required|string|max:255',
+
+        'email' => [
+            'nullable',
+            'email',
+            'unique:users,email,' . $user->id,
+        ],
+
+        'phone' => [
+            'required',
+            'string',
+            'max:20',
+            'unique:users,phone,' . $user->id,
+        ],
+
+        'gender' => 'nullable|in:male,female',
+        'date_of_birth' => 'nullable|date',
+        'country' => 'nullable|string',
+        'city' => 'nullable|string',
+        'emergency_contact' => 'nullable|string',
+    ]);
+
+    // Update users table
+    $user->update([
+        'name' => $request->name,
+        'email' => $request->email,
+        'phone' => $request->phone,
+        'gender' => $request->gender,
+    ]);
+
+    // Update patients table
+    $patient->update([
+        'date_of_birth' => $request->date_of_birth,
+        'country' => $request->country,
+        'city' => $request->city,
+        'emergency_contact' => $request->emergency_contact,
+    ]);
+
+    $user->refresh();
+    $patient->refresh();
+
+    return $this->sendResponse([
+        'user' => new UserResource($user),
+        'patient' => $patient,
+    ], 'Patient updated successfully');
+}
 }

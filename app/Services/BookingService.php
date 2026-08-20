@@ -53,7 +53,7 @@ class BookingService
         return null;
     }
 
-    public function book($user, $doctorId, $date, $startTime)
+    public function book($user, $doctorId, $date, $startTime,$sessionType)
     {
         // ✅ جيب الدوام
         $schedule = Schedule::where('doctor_id', $doctorId)
@@ -98,6 +98,7 @@ class BookingService
             'start_time' => $startTime,
             'end_time' => $endTime,
             'status' => 'pending',
+            'session_type' => $sessionType
         ]);
 
         return [

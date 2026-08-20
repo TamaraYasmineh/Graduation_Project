@@ -20,10 +20,15 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //     if (str_contains(config('app.url'), 'https')) {
+       
+        // if (str_contains(request()->getHost(), 'ngrok-free.dev')) {
         //     URL::forceScheme('https');
         // }
-        if (str_contains(request()->getHost(), 'ngrok-free.dev')) {
+
+        if (
+            str_contains(request()->getHost(), 'ngrok-free.dev') ||
+            str_contains(request()->getHost(), 'ngrok-free.app')
+        ) {
             URL::forceScheme('https');
         }
     }

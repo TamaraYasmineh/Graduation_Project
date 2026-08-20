@@ -34,7 +34,7 @@ class AddAdviceAndSupportAndInfoController extends BaseController
         $this->supportService = $supportService;
     }
 
-    public function storeAdvices(StoreAdviceRequest $request)
+    public function storeAdvices(StoreAdviceRequest $request,FirebaseService $firebase)
     {
         $result = $this->adviceService->store(
             $request->validated(),
@@ -47,7 +47,37 @@ class AddAdviceAndSupportAndInfoController extends BaseController
                 'message' => $result['message'],
             ], $result['code']);
         }
+        // جلب جميع المرضى
+    $patients = User::role('patient')->get();
 
+    $responses = [];
+
+    foreach ($patients as $patient) {
+
+        $tokens = $patient->deviceTokens()->pluck('token');
+
+        foreach ($tokens as $token) {
+
+            $notification = $firebase->sendNotification(
+                $token,
+                'نصيحة جديدة من فريقنا 💙',
+                ' لدينا نصيحة جديدة لك',
+                [
+                    'type' => 'tips',
+                ]
+            );
+
+            $responses[] = [
+                'patient_id' => $patient->id,
+                'patient_name' => $patient->name,
+                'token' => $token,
+                'title' => 'نصيحة جديدة من فريقنا 💙',
+                'body' => ' لدينا نصيحة جديدة لك',
+                'sent_at' => now()->toDateTimeString(),
+                'firebase_response' => $notification,
+            ];
+        }
+    }
         return response()->json([
             'success' => true,
             'data' => new AdviceResource($result['data']),
@@ -146,20 +176,7 @@ class AddAdviceAndSupportAndInfoController extends BaseController
             'data' => CenterInfoResource::collection($result['data']),
         ]);
     }
-    // psychological support
-    // public function storePsychologicalSupport(StoreSupportRequest $request)
-    // {
-    //     $result = $this->supportService->store($request->validated(), $request->user());
-
-    //     if (!$result['success']) {
-    //         return response()->json($result, $result['code']);
-    //     }
-
-    //     return response()->json([
-    //         'success' => true,
-    //         'data' => new PsychologicalSupportResource($result['data'])
-    //     ]);
-    // }
+    
     public function storePsychologicalSupport(
         StoreSupportRequest $request,
         FirebaseService $firebase
@@ -204,61 +221,7 @@ class AddAdviceAndSupportAndInfoController extends BaseController
             'notifications' => $responses,
         ]);
     }
-    //     public function storePsychologicalSupport(
-    //         StoreSupportRequest $request,
-    //         FirebaseService $firebase
-    //     ) {
-    //         $result = $this->supportService->store(
-    //             $request->validated(),
-    //             $request->user()
-    //         );
-
-    //         if (!$result['success']) {
-    //             return response()->json($result, $result['code']);
-    //         }
-
-    //         $patientId = $result['data']->user_id;
-
-    // $patient = \App\Models\User::find($patientId);
-
-    // if (!$patient) {
-    //     return response()->json([
-    //         'error' => 'Patient not found'
-    //     ]);
-    // }
-
-    // $tokens = $patient->deviceTokens()->pluck('token');
-
-    // $responses = [];
-
-    // foreach ($tokens as $token) {
-    //     $responses[] = $firebase->sendNotification(
-    //         $token,
-    //         'تم استلام طلب الدعم النفسي',
-    //         'سيتم التواصل معك قريباً'
-    //     );
-    // }
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'data' => new PsychologicalSupportResource($result['data']),
-    //             'notifications' => $responses
-    //         ]);
-    //     }
-    //     //  تعديل
-    //     public function updatePsychologicalSupport($id, UpdateSupportRequest $request)
-    //     {
-    //         $result = $this->supportService->update($id, $request->validated(), $request->user());
-
-    //         if (!$result['success']) {
-    //             return response()->json($result, $result['code']);
-    //         }
-
-    //         return response()->json([
-    //             'success' => true,
-    //             'data' => new PsychologicalSupportResource($result['data'])
-    //         ]);
-    //     }
+   
 
     //  حذف
     public function destroyPsychologicalSupport($id, Request $request)

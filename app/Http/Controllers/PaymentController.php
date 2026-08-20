@@ -275,29 +275,107 @@ class PaymentController extends BaseController
     // 6. Get Payment Status
     // =========================
     public function getPaymentStatus($paymentId, PaymeraService $paymera)
-    {
-        $payment = Payment::query()->where('payment_id', $paymentId)->first();
+{
+    \Log::info('===== GET PAYMENT STATUS =====');
 
-        $response = $paymera->getStatus($paymentId);
+    $payment = Payment::query()
+        ->where('payment_id', $paymentId)
+        ->first();
 
-        if (! $response || ! isset($response['ErrorCode'])) {
-            return $this->sendError('لا يوجد رد من بيميرا', [], 500);
-        }
-
-        if ($response['ErrorCode'] != 0) {
-            return $this->sendError($response['ErrorMessage'] ?? 'خطأ في الدفع', [], 400);
-        }
-        if (! isset($response['Data'])) {
-            return $this->sendError('Missing Data in response', [], 500);
-        }
-
-        return $this->sendResponse([
-            'status' => $response['Data']['status'],
-            'amount' => $response['Data']['amount'],
-            'paid_at' => $payment?->paid_at,
-        ], 'Payment Status');
+    if (! $payment) {
+        return $this->sendError('Payment not found', [], 404);
     }
 
+    \Log::info('Payment From DB', [
+        'status' => $payment->status,
+        'order_id' => $payment->order_id,
+    ]);
+
+    $response = $paymera->getStatus($paymentId);
+
+    \Log::info('Paymera Response', [
+        'response' => $response,
+    ]);
+
+    if (! $response || ! isset($response['ErrorCode'])) {
+        return $this->sendError('لا يوجد رد من بيميرا', [], 500);
+    }
+
+    if ($response['ErrorCode'] != 0) {
+        return $this->sendError(
+            $response['ErrorMessage'] ?? 'خطأ في الدفع',
+            [],
+            400
+        );
+    }
+
+    if (! isset($response['Data'])) {
+        return $this->sendError(
+            'Missing Data in response',
+            [],
+            500
+        );
+    }
+
+    $status = $response['Data']['status'];
+
+    \Log::info('Status From Paymera', [
+        'status' => $status,
+        'db_status_before' => $payment->status,
+    ]);
+
+    switch ($status) {
+
+        case 'A':
+
+            if ($payment->status !== 'A') {
+
+                \Log::info('Entering markSuccess');
+
+                $payment->markSuccess(
+                    $response['Data']['rrn'] ?? null,
+                    $response
+                );
+            }
+
+            break;
+
+        case 'F':
+
+            if ($payment->status !== 'F') {
+
+                \Log::info('Entering markFailed');
+
+                $payment->markFailed($response);
+            }
+
+            break;
+
+        case 'C':
+
+            if ($payment->status !== 'C') {
+
+                \Log::info('Entering markCanceled');
+
+                $payment->markCanceled($response);
+            }
+
+            break;
+    }
+
+    $payment->refresh();
+
+    \Log::info('Payment After Refresh', [
+        'status' => $payment->status,
+        'paid_at' => $payment->paid_at,
+    ]);
+
+    return $this->sendResponse([
+        'status' => $payment->status,
+        'amount' => $response['Data']['amount'],
+        'paid_at' => $payment->paid_at,
+    ], 'Payment Status');
+}
     public function PaymentStatistics()
     {
         $accepted = Payment::query()->where('status', 'A')->count();

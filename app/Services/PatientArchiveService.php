@@ -85,7 +85,7 @@ class PatientArchiveService
 
     public function getArchivedPatients(array $filters = [])
     {
-        $query = PatientArchive::with(['patient', 'archivedBy'])
+        $query = PatientArchive::with(['patient.user', 'archivedBy'])
             ->active()
             ->latest('archived_at');
 
@@ -96,7 +96,7 @@ class PatientArchiveService
 
         // بحث بالاسم
         if (isset($filters['search'])) {
-            $query->whereHas('patient', function ($q) use ($filters) {
+            $query->whereHas('patient.user', function ($q) use ($filters) {
                 $q->where('name', 'like', '%' . $filters['search'] . '%');
             });
         }

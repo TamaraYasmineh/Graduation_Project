@@ -11,7 +11,8 @@ use App\Models\Treatment_plan;
 use App\Models\Treatment_session;
 use App\Services\SessionService;
 use Illuminate\Http\Request;
-
+use App\Models\MedicalRecord;
+use Illuminate\Support\Facades\Auth;
 class SessionController extends BaseController
 {
     private SessionService $bsaService;
@@ -192,4 +193,26 @@ class SessionController extends BaseController
             'تم حذف الجلسة بنجاح'
         );
     }
+    public function getMyTreatmentSessions(Request $request)
+    {
+        $user = $request->user();
+    
+        $sessions = Treatment_session::whereHas(
+            'treatmentPlan.medicalRecord',
+            function ($query) use ($user) {
+                $query->where('patient_id', $user->id);
+            }
+        )
+            ->with([
+                'treatmentPlan'
+            ])
+            ->latest('session_date')
+            ->get();
+    
+        return $this->sendResponse(
+            TreatmentSessionResource::collection($sessions),
+            'تم جلب جلساتك العلاجية بنجاح'
+        );
+    }
+
 }

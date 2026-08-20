@@ -61,6 +61,7 @@ class MedicalRecordController extends BaseController
             // 3. أنشئ Order مرتبط بالموعد
             $order = Order::create([
                 'amount' => $request->amount,
+                'amount_part' => 0,
                 'status' => 'pending',
                 'appointment_id' => $appointment->id,
                 'user_id' => $user->id,
@@ -112,7 +113,8 @@ class MedicalRecordController extends BaseController
             $request->user(),
             $request->doctor_id,
             $request->date,
-            $request->start_time
+            $request->start_time,
+            $request->session_type
         );
 
         if (! $result['success']) {
@@ -122,6 +124,7 @@ class MedicalRecordController extends BaseController
         // إنشاء Order و Payment
         $order = Order::create([
             'amount' => $request->amount,
+            'amount_part' => 0,
             'status' => 'pending',
             'appointment_id' => $appointment->id,
             'user_id' => $user->id,
@@ -430,7 +433,8 @@ class MedicalRecordController extends BaseController
             $patient,
             $request->doctor_id,
             $request->date,
-            $request->start_time
+            $request->start_time,
+            $request->session_type,
         );
 
         if (! $result['success']) {
@@ -441,6 +445,7 @@ class MedicalRecordController extends BaseController
 
         $order = Order::create([
             'amount' => $request->amount,
+            'amount_part' => $request->amount_part,
             'status' => 'pending', // الدفع اليدوي لم يتم بعد
             'appointment_id' => $appointment->id,
             'user_id' => $patient->id,
@@ -451,4 +456,42 @@ class MedicalRecordController extends BaseController
             'order' => $order,
         ], 'تم الحجز بنجاح وسيتم الدفع يدوياً');
     }
+    public function getPayments()
+{
+    $orders = Order::all();
+
+    return $this->sendResponse(
+        $orders,
+        'تم جلب جميع المدفوعات بنجاح'
+    );
+}
+
+public function addAmountPart(Request $request, $id)
+{
+    $request->validate([
+        'amount_part' => 'required|numeric|min:0',
+    ]);
+
+    $order = Order::findOrFail($id);
+
+    $order->increment('amount_part', $request->amount_part);
+
+    $order->refresh();
+
+    return $this->sendResponse(
+        $order,
+        'تم تحديث المبلغ المدفوع بنجاح'
+    );
+}
+public function getPaymentsByUser($userId)
+{
+    $orders = Order::where('user_id', $userId)
+        ->latest()
+        ->get();
+
+    return $this->sendResponse(
+        $orders,
+        'تم جلب معلومات الدفع بنجاح'
+    );
+}
 }

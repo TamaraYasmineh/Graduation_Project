@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->nullable();
             $table->bigInteger('amount');
+            $table->bigInteger('amount_part');
             $table->enum('status', ['pending', 'accepted', 'failed', 'canceled'])->default('pending');
             $table->foreignId('appointment_id')->nullable()->constrained()->nullOnDelete();
             $table->timestamps();

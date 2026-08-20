@@ -149,5 +149,55 @@ class AppointmentController extends BaseController
             'patients' => $patients,
         ]);
     }
+    public function getSessionAppointments(Request $request)
+    {
+        $user = Auth::user();
     
+        $sessionType = $request->query('session_type');
+    
+        $query = Appointment::with([
+            'patient.patient',
+            'doctor.user'
+        ]);
+    
+        // إذا أرسل نوع الجلسة
+        if ($sessionType) {
+            $query->where('session_type', $sessionType);
+        }
+    
+        if ($user->hasRole('doctor')) {
+            $query->where('doctor_id', $user->doctor->id);
+        }
+        // فلترة حسب التاريخ
+        $type = $request->query('type', 'monthly');
+    
+        if ($type === 'daily') {
+    
+            $query->whereDate('date', Carbon::today());
+    
+        } elseif ($type === 'weekly') {
+    
+            $query->whereBetween('date', [
+                Carbon::now()->startOfWeek(),
+                Carbon::now()->endOfWeek(),
+            ]);
+    
+        } elseif ($type === 'monthly') {
+    
+            $query->whereMonth('date', Carbon::now()->month)
+                  ->whereYear('date', Carbon::now()->year);
+        }
+    
+        $appointments = $query
+            ->orderBy('date')
+            ->orderBy('start_time')
+            ->get();
+    
+        return response()->json([
+            'success' => true,
+            'type' => $type,
+            'session_type' => $sessionType,
+            'appointments' => $appointments,
+        ]);
+    }
 }

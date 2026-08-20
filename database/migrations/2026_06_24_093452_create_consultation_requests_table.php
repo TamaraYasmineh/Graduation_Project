@@ -22,12 +22,6 @@ return new class extends Migration
             $table->foreignId('consultant_id')
                 ->constrained()
                 ->cascadeOnDelete();
-
-            // $table->foreignId('consultation_order_id')
-            //     ->nullable()
-            //     ->constrained('consultation_orders')
-            //     ->nullOnDelete();
-
             $table->bigInteger('amount');
 
             $table->enum('status', [
