@@ -20,6 +20,7 @@ use App\Http\Controllers\SuperDoctor\AddAdviceAndSupportAndInfoController;
 use App\Http\Controllers\SuperDoctor\ApproveAndRejectController;
 use App\Http\Controllers\SuperDoctor\EmployeeController;
 use App\Http\Controllers\SuperDoctor\SuperDoctorController;
+use App\Http\Controllers\PatientReferralController;
 use Illuminate\Support\Facades\Route;
 
 
