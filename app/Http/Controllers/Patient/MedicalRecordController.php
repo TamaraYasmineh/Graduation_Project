@@ -408,6 +408,7 @@ class MedicalRecordController extends BaseController
             ]);
             $order = Order::create([
                 'amount' => $request->amount,
+                'amount_part' => 0,
                 'status' => 'pending', // بانتظار الدفع اليدوي
                 'appointment_id' => $appointment->id,
                 'user_id' => $patient->id,

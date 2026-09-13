@@ -222,8 +222,19 @@ class AddAdviceAndSupportAndInfoController extends BaseController
         ]);
     }
    
+    public function updatePsychologicalSupport($id, UpdateSupportRequest $request)
+    {
+        $result = $this->supportService->update($id, $request->validated(), $request->user());
 
-    //  حذف
+        if (!$result['success']) {
+            return response()->json($result, $result['code']);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => new PsychologicalSupportResource($result['data'])
+        ]);
+    }    //  حذف
     public function destroyPsychologicalSupport($id, Request $request)
     {
         $result = $this->supportService->delete($id, $request->user());
