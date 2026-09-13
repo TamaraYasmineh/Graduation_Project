@@ -102,74 +102,175 @@ class PatientController extends BaseController
 
     public function getPatient(Request $request)
     {
-
+        $user = auth()->user();
+    
         $query = User::role('patient')
-            ->with(['patient', 'medicalRecord', 'appointments.doctor.user']);
-        if ($request->search) {
-            $query->where('name', 'like', '%'.$request->search.'%');
+            // استبعاد أي مريض موجود في جدول الأرشفة
+            ->whereDoesntHave('patient.archives')
+    
+            // استبعاد أي مريض موجود في جدول التحويل
+            ->whereDoesntHave('patient.referrals')
+    
+            ->with([
+                'patient',
+                'medicalRecord',
+                'appointments.doctor.user'
+            ]);
+    
+        /*
+        |--------------------------------------------------------------------------
+        | Doctor
+        |--------------------------------------------------------------------------
+        | الطبيب يرى مرضاه فقط
+        */
+        if ($user->hasRole('doctor')) {
+    
+            $query->whereHas('appointments', function ($q) use ($user) {
+    
+                $q->whereHas('doctor', function ($doctorQuery) use ($user) {
+                    $doctorQuery->where('user_id', $user->id);
+                });
+    
+            });
         }
+    
+        /*
+        |--------------------------------------------------------------------------
+        | Super Doctor
+        |--------------------------------------------------------------------------
+        | السوبر دكتور يرى مرضى جميع الأطباء
+        |--------------------------------------------------------------------------
+        */
+    
+        if ($request->search) {
+            $query->where('name', 'like', '%' . $request->search . '%');
+        }
+    
         $patients = $query->latest()->paginate(10);
-
+    
         return $this->sendResponse(
             InforPatientResource::collection($patients),
             'Patients retrieved successfully',
             200
         );
-
     }
+    
+   
+    // public function showPatient($id)
+    // {
+    //     $patient = User::role('patient')
+    //         ->with([
+    //             'patient',
+    //             'medicalRecord',
+    //             'appointments.doctor.user',
+    //             'appointments.order.payment',
+    //         ])
+    //         ->find($id);
+
+    //     if (! $patient) {
+    //         return $this->sendError(
+    //             'Patient not found',
+    //             [],
+    //             404
+    //         );
+    //     }
+
+    //     return $this->sendResponse(
+    //         new InforPatientResource($patient),
+    //         'Patient retrieved successfully'
+    //     );
+    // }
 
     public function showPatient($id)
-    {
-        $patient = User::role('patient')
-            ->with([
-                'patient',
-                'medicalRecord',
-                'appointments.doctor.user',
-                'appointments.order.payment',
-            ])
-            ->find($id);
+     {
+            $user = User::role('patient')
+                ->whereHas('patient', function ($query) use ($id) {
+                    $query->where('id', $id); 
+                })
+                ->with([
+                    'patient',
+                    'medicalRecord',
+                    'appointments.doctor.user',
+                    'appointments.order.payment',
+                ])
+                ->first();
+                if (! $user) {
+                    return $this->sendError(
+                        'Patient not found',
+                        [],
+                        404
+                    );
+                }
+    
+                return $this->sendResponse(
+                    new InforPatientResource($user),
+                    'Patient retrieved successfully'
+                );
+         }
+    // public function fullProfile(User $patient)
+    // {
+    //     $user = auth()->user();
+    
+    //     // إذا كان دكتور
+    //     if ($user->hasRole('doctor')) {
+    
+    //         $doctorId = $user->doctor->id;
+    
+    //         $hasAppointment = Appointment::where('doctor_id', $doctorId)
+    //             ->where('patient_id', $patient->id)
+    //             ->exists();
+    
+    //         abort_unless($hasAppointment, 403, 'Unauthorized.');
+    //     }
+    
+    //     // إذا كان super_admin يشاهد الجميع
+    
+    //     $patient->load([
+    //         'patient',
+    //         'medicalRecord.treatmentPlan.protocol.drugs',
+    //         'medicalRecord.treatmentPlan.sessions',
+    //         'medicalRecord.medicalTests',
+    //     ]);
+    
+    //     return response()->json([
+    //         'success' => true,
+    //         'data' => new PatientFullProfileResource($patient),
+    //     ]);
+    // }
+    public function fullProfile($id) 
+     {
+            $currentUser = auth()->user();
 
-        if (! $patient) {
-            return $this->sendError(
-                'Patient not found',
-                [],
-                404
-            );
-        }
+            $patientUser = User::role('patient')
+                ->whereHas('patient', function ($query) use ($id) {
+                    $query->where('id', $id);
+                })
+                ->with([
+                    'patient',
+                    'medicalRecord.treatmentPlan.protocol.drugs',
+                    'medicalRecord.treatmentPlan.sessions',
+                    'medicalRecord.medicalTests',
+                ])
+                ->first();
 
-        return $this->sendResponse(
-            new InforPatientResource($patient),
-            'Patient retrieved successfully'
-        );
-    }
-    public function fullProfile(User $patient)
-    {
-        $user = auth()->user();
-    
-        // إذا كان دكتور
-        if ($user->hasRole('doctor')) {
-    
-            $doctorId = $user->doctor->id;
-    
-            $hasAppointment = Appointment::where('doctor_id', $doctorId)
-                ->where('patient_id', $patient->id)
-                ->exists();
-    
-            abort_unless($hasAppointment, 403, 'Unauthorized.');
+            if (!$patientUser) {
+                return $this->sendError('Patient not found', [], 404);
+            }
+
+            if ($currentUser->hasRole('doctor')) {
+                $doctorId = $currentUser->doctor->id;
+                $patientId = $patientUser->patient->id; 
+
+                $hasAppointment = Appointment::where('doctor_id', $doctorId)
+                    ->where('patient_id', $patientId)
+                    ->exists();
+
+                abort_unless($hasAppointment, 403, 'Unauthorized.');
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => new \App\Http\Resources\PatientFullProfileResource($patientUser),
+            ]);
         }
-    
-        // إذا كان super_admin يشاهد الجميع
-    
-        $patient->load([
-            'patient',
-            'medicalRecord.treatmentPlan.protocol.drugs',
-            'medicalRecord.treatmentPlan.sessions',
-            'medicalRecord.medicalTests',
-        ]);
-    
-        return response()->json([
-            'success' => true,
-            'data' => new PatientFullProfileResource($patient),
-        ]);
-    }
 }
