@@ -55,26 +55,61 @@ class Patient extends Model
         return $this->morphMany(MedicalTest::class, 'uploadable');
     }
     public function archives()
-{
-    return $this->hasMany(PatientArchive::class);
-}
+    {
+        return $this->hasMany(PatientArchive::class);
+    }
 
-public function isArchived(): bool
-{
-    return $this->archives()->active()->exists();
-}
+    public function isArchived(): bool
+    {
+        return $this->archives()->active()->exists();
+    }
 
-public function latestArchive()
-{
-    return $this->archives()->active()->latest()->first();
-}
-public function referrals()
-{
-    return $this->hasMany(PatientReferral::class);
-}
+    public function latestArchive()
+    {
+        return $this->archives()->active()->latest()->first();
+    }
+    public function referrals()
+    {
+        return $this->hasMany(PatientReferral::class);
+    }
 
-public function latestReferral()
-{
-    return $this->referrals()->latest()->first();
-}
+    public function latestReferral()
+    {
+        return $this->referrals()->latest()->first();
+    }
+    public function latestInternalReferral()
+    {
+        return $this->hasOne(PatientReferral::class)
+            ->where('type', 'internal')
+            ->where('status', 'accepted')
+            ->latestOfMany('referred_at');
+    }
+    public function latestApprovedInternalReferral()
+    {
+        return $this->hasOne(PatientReferral::class)
+            ->ofMany(
+                [
+                    'referred_at' => 'max',
+                    'id' => 'max',
+                ],
+                function ($query) {
+                    $query->where('type', 'internal')
+                        ->where('status', 'accepted');
+                }
+            );
+    }
+    public function latestPendingInternalReferral()
+    {
+        return $this->hasOne(PatientReferral::class)
+            ->ofMany(
+                [
+                    'referred_at' => 'max',
+                    'id' => 'max',
+                ],
+                function ($query) {
+                    $query->where('type', 'internal')
+                        ->where('status', 'pending');
+                }
+            );
+    }
 }

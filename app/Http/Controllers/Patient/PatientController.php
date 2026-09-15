@@ -103,174 +103,244 @@ class PatientController extends BaseController
     public function getPatient(Request $request)
     {
         $user = auth()->user();
-    
+
         $query = User::role('patient')
-            // استبعاد أي مريض موجود في جدول الأرشفة
             ->whereDoesntHave('patient.archives')
-    
-            // استبعاد أي مريض موجود في جدول التحويل
-            ->whereDoesntHave('patient.referrals')
-    
             ->with([
                 'patient',
+                'patient.latestApprovedInternalReferral.referredToDoctor.user',
+                'patient.latestPendingInternalReferral.referredBy.user',
                 'medicalRecord',
-                'appointments.doctor.user'
+                'appointments.doctor.user',
             ]);
-    
+
         /*
-        |--------------------------------------------------------------------------
-        | Doctor
-        |--------------------------------------------------------------------------
-        | الطبيب يرى مرضاه فقط
-        */
-        if ($user->hasRole('doctor')) {
-    
-            $query->whereHas('appointments', function ($q) use ($user) {
-    
-                $q->whereHas('doctor', function ($doctorQuery) use ($user) {
-                    $doctorQuery->where('user_id', $user->id);
-                });
-    
+    |--------------------------------------------------------------------------
+    | Super Doctor
+    |--------------------------------------------------------------------------
+    | السوبر دكتور يرى:
+    | 1. المرضى الذين ليس لديهم تحويل داخلي accepted
+    | 2. المرضى الذين تم تحويلهم إليه هو شخصياً
+    |
+    | لكنه لا يرى المريض بعد قبول تحويله إلى طبيب آخر.
+    |--------------------------------------------------------------------------
+    */
+
+        if ($user->hasRole('super_doctor')) {
+
+            $superDoctor = $user->doctor;
+
+            if (!$superDoctor) {
+                return $this->sendResponse(
+                    [],
+                    'Doctor profile not found',
+                    404
+                );
+            }
+
+            $query->where(function ($q) use ($superDoctor) {
+
+                // الحالة الأولى:
+                // لا يوجد تحويل داخلي accepted
+                $q->whereDoesntHave(
+                    'patient.latestApprovedInternalReferral'
+                )
+
+                    // الحالة الثانية:
+                    // يوجد تحويل accepted ولكن إلى السوبر دكتور نفسه
+                    ->orWhereHas(
+                        'patient.latestApprovedInternalReferral',
+                        function ($referralQuery) use ($superDoctor) {
+
+                            $referralQuery->where(
+                                'referred_to_doctor_id',
+                                $superDoctor->id
+                            );
+                        }
+                    );
             });
         }
-    
+
         /*
-        |--------------------------------------------------------------------------
-        | Super Doctor
-        |--------------------------------------------------------------------------
-        | السوبر دكتور يرى مرضى جميع الأطباء
-        |--------------------------------------------------------------------------
-        */
-    
-        if ($request->search) {
-            $query->where('name', 'like', '%' . $request->search . '%');
+    |--------------------------------------------------------------------------
+    | Doctor
+    |--------------------------------------------------------------------------
+    | الطبيب العادي يرى مرضاه الحاليين فقط
+    |--------------------------------------------------------------------------
+    */
+
+        if ($user->hasRole('doctor') && !$user->hasRole('super_doctor')) {
+
+            $doctor = $user->doctor;
+
+            if (!$doctor) {
+                return $this->sendResponse(
+                    [],
+                    'Doctor profile not found',
+                    404
+                );
+            }
+
+            $query->where(function ($q) use ($doctor) {
+
+                /*
+            |--------------------------------------------------------------------------
+            | الحالة الأولى:
+            | المريض لديه آخر تحويل داخلي accepted إلى هذا الطبيب
+            |--------------------------------------------------------------------------
+            */
+
+                $q->whereHas(
+                    'patient.latestApprovedInternalReferral',
+                    function ($referralQuery) use ($doctor) {
+
+                        $referralQuery->where(
+                            'referred_to_doctor_id',
+                            $doctor->id
+                        );
+                    }
+                )
+
+                    /*
+            |--------------------------------------------------------------------------
+            | الحالة الثانية:
+            | لا يوجد تحويل داخلي accepted
+            | وبالتالي نعتمد على Appointment
+            |--------------------------------------------------------------------------
+            */
+
+                    ->orWhere(function ($q) use ($doctor) {
+
+                        // لا يوجد أي تحويل داخلي pending أو accepted
+                        $q->whereDoesntHave('patient.referrals', function ($referralQuery) {
+
+                            $referralQuery->where('type', 'internal')
+                                ->whereIn('status', ['pending', 'accepted']);
+                        })
+
+                            ->whereHas('appointments', function ($appointmentQuery) use ($doctor) {
+
+                                $appointmentQuery->where(
+                                    'doctor_id',
+                                    $doctor->id
+                                );
+                            });
+                    });
+            });
         }
-    
+
+        /*
+    |--------------------------------------------------------------------------
+    | Search
+    |--------------------------------------------------------------------------
+    */
+
+        if ($request->search) {
+            $query->where(
+                'name',
+                'like',
+                '%' . $request->search . '%'
+            );
+        }
+
         $patients = $query->latest()->paginate(10);
-    
+
         return $this->sendResponse(
             InforPatientResource::collection($patients),
             'Patients retrieved successfully',
             200
         );
     }
-    
-   
-    // public function showPatient($id)
-    // {
-    //     $patient = User::role('patient')
-    //         ->with([
-    //             'patient',
-    //             'medicalRecord',
-    //             'appointments.doctor.user',
-    //             'appointments.order.payment',
-    //         ])
-    //         ->find($id);
-
-    //     if (! $patient) {
-    //         return $this->sendError(
-    //             'Patient not found',
-    //             [],
-    //             404
-    //         );
-    //     }
-
-    //     return $this->sendResponse(
-    //         new InforPatientResource($patient),
-    //         'Patient retrieved successfully'
-    //     );
-    // }
-
     public function showPatient($id)
-     {
-            $user = User::role('patient')
-                ->whereHas('patient', function ($query) use ($id) {
-                    $query->where('id', $id); 
-                })
-                ->with([
-                    'patient',
-                    'medicalRecord',
-                    'appointments.doctor.user',
-                    'appointments.order.payment',
-                ])
-                ->first();
-                if (! $user) {
-                    return $this->sendError(
-                        'Patient not found',
-                        [],
-                        404
-                    );
-                }
-    
-                return $this->sendResponse(
-                    new InforPatientResource($user),
-                    'Patient retrieved successfully'
-                );
-         }
+    {
+        $user = User::role('patient')
+            ->whereHas('patient', function ($query) use ($id) {
+                $query->where('id', $id);
+            })
+            ->with([
+                'patient',
+                'medicalRecord',
+                'appointments.doctor.user',
+                'appointments.order.payment',
+            ])
+            ->first();
+        if (! $user) {
+            return $this->sendError(
+                'Patient not found',
+                [],
+                404
+            );
+        }
+
+        return $this->sendResponse(
+            new InforPatientResource($user),
+            'Patient retrieved successfully'
+        );
+    }
     // public function fullProfile(User $patient)
     // {
     //     $user = auth()->user();
-    
+
     //     // إذا كان دكتور
     //     if ($user->hasRole('doctor')) {
-    
+
     //         $doctorId = $user->doctor->id;
-    
+
     //         $hasAppointment = Appointment::where('doctor_id', $doctorId)
     //             ->where('patient_id', $patient->id)
     //             ->exists();
-    
+
     //         abort_unless($hasAppointment, 403, 'Unauthorized.');
     //     }
-    
+
     //     // إذا كان super_admin يشاهد الجميع
-    
+
     //     $patient->load([
     //         'patient',
     //         'medicalRecord.treatmentPlan.protocol.drugs',
     //         'medicalRecord.treatmentPlan.sessions',
     //         'medicalRecord.medicalTests',
     //     ]);
-    
+
     //     return response()->json([
     //         'success' => true,
     //         'data' => new PatientFullProfileResource($patient),
     //     ]);
     // }
-    public function fullProfile($id) 
-     {
-            $currentUser = auth()->user();
+    public function fullProfile($id)
+    {
+        $currentUser = auth()->user();
 
-            $patientUser = User::role('patient')
-                ->whereHas('patient', function ($query) use ($id) {
-                    $query->where('id', $id);
-                })
-                ->with([
-                    'patient',
-                    'medicalRecord.treatmentPlan.protocol.drugs',
-                    'medicalRecord.treatmentPlan.sessions',
-                    'medicalRecord.medicalTests',
-                ])
-                ->first();
+        $patientUser = User::role('patient')
+            ->whereHas('patient', function ($query) use ($id) {
+                $query->where('id', $id);
+            })
+            ->with([
+                'patient',
+                'medicalRecord.treatmentPlan.protocol.drugs',
+                'medicalRecord.treatmentPlan.sessions',
+                'medicalRecord.medicalTests',
+            ])
+            ->first();
 
-            if (!$patientUser) {
-                return $this->sendError('Patient not found', [], 404);
-            }
-
-            if ($currentUser->hasRole('doctor')) {
-                $doctorId = $currentUser->doctor->id;
-                $patientId = $patientUser->patient->id; 
-
-                $hasAppointment = Appointment::where('doctor_id', $doctorId)
-                    ->where('patient_id', $patientId)
-                    ->exists();
-
-                abort_unless($hasAppointment, 403, 'Unauthorized.');
-            }
-
-            return response()->json([
-                'success' => true,
-                'data' => new \App\Http\Resources\PatientFullProfileResource($patientUser),
-            ]);
+        if (!$patientUser) {
+            return $this->sendError('Patient not found', [], 404);
         }
+
+        if ($currentUser->hasRole('doctor')) {
+            $doctorId = $currentUser->doctor->id;
+            $patientId = $patientUser->patient->id;
+
+            $hasAppointment = Appointment::where('doctor_id', $doctorId)
+                ->where('patient_id', $patientId)
+                ->exists();
+
+            abort_unless($hasAppointment, 403, 'Unauthorized.');
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => new \App\Http\Resources\PatientFullProfileResource($patientUser),
+        ]);
+    }
 }

@@ -1,11 +1,14 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Doctor;
+use App\Http\Controllers\BaseController;
 use App\Http\Requests\StoreReferralRequest;
+use App\Http\Resources\PatientReferralResource;
+use App\Models\Doctor;
 use App\Services\PatientReferralService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+
 class PatientReferralController extends BaseController
 {
     protected $service;
@@ -26,19 +29,27 @@ class PatientReferralController extends BaseController
             'external_center_phone',
             'external_center_address',
         ]);
-    
+
         $doctor = Doctor::where('user_id', auth()->id())->first();
-    
+
         if (! $doctor) {
             return response()->json([
                 'success' => false,
                 'message' => 'Only doctors can refer patients',
             ], 403);
         }
-    
+
         $result = $this->service->referPatient($patient, $data, $doctor);
-    
-        return response()->json($result, $result['code'] ?? 200);
+
+         if (! $result['success']) {
+        return response()->json($result, $result['code'] ?? 500);
+    }
+
+    return response()->json([
+        'success' => true,
+        'data' => new PatientReferralResource($result['referral']),
+        'message' => $result['message'],
+    ], 200);
     }
     public function updateStatus(int $referralId, Request $request)
     {
