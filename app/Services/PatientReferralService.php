@@ -48,15 +48,15 @@ class PatientReferralService
 
             DB::commit();
 
-            return [
-                'success' => true,
-                $referral->load([
-                    'patient.user',
-                    'referredBy.user',
-                    'referredToDoctor.user',
-                ]),
-                'message' => 'Patient referred successfully',
-            ];
+          return [
+    'success' => true,
+    'referral' => $referral->load([
+        'patient.user',
+        'referredBy.user',
+        'referredToDoctor.user',
+    ]),
+    'message' => 'Patient referred successfully',
+];
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -159,7 +159,7 @@ class PatientReferralService
                 return [
                     'id' => $doctor->id,
                     'name' => $doctor->user->name,
-                    'specialty' => $doctor->specialty,
+                    'specialty' => $doctor->specialization,
                 ];
             }),
         ];

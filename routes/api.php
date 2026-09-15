@@ -15,7 +15,6 @@ use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\PostChemoRecommendationController;
 use App\Http\Controllers\ProtocolController;
 use App\Http\Controllers\SessionController;
-use App\Http\Controllers\PatientReferralController;
 use App\Http\Controllers\SuperDoctor\AddAdviceAndSupportAndInfoController;
 use App\Http\Controllers\SuperDoctor\ApproveAndRejectController;
 use App\Http\Controllers\SuperDoctor\EmployeeController;
